@@ -4,15 +4,15 @@ public class Quiz1
         
         // question 1 starts here
         A q1 = new A();
-        q1.f();
+        q1.f(); // gives 2 1
 
         // question 2 starts here
         B q2 = new B();
-        q2.f();
+        q2.f(); // gives 1 1 0 1
 
         // question 3 starts here
         D q3 = new D();
-        q3.f();
+        q3.f(); // gives quack quack moo quack
     }
 }
 
@@ -111,7 +111,7 @@ class F extends E {
 /**
  * Question 5:
  *
- * What is the statement (or more importantly, what is the size) of creating
+ * What is the statement (or essentially, what is the size) of creating
  * and initialising 8 vertices for the current GL_ARRAY_BUFFER?
  * Assuming vertices are of FLOAT format occupying 4 bytes each,
  * and each vertices is a 2D point (consisting x and y coordinate)
@@ -143,4 +143,6 @@ class F extends E {
  *       {0} {2 3}
  *       {0}    {3 4}
  *       {0}      {4 5}
+ *
+ * Hence option B cannot be drawn by prmitive GL_TRIANGLE_FAN
  */

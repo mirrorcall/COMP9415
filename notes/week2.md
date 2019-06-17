@@ -225,7 +225,7 @@ q_1 \\ q_2 \\ 1 \end{pmatrix} =
 \begin{pmatrix}
 p_1 \\ p_2 \\ 1 \end{pmatrix} $$
 
-* Rotation about the origin
+* Rotation about the origin (counterclockwise)
 $$ \begin{pmatrix}
 q_1 \\ q_2 \\ 1 \end{pmatrix} =
 \begin{pmatrix}
