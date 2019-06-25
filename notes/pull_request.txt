@@ -1,0 +1,4 @@
+Pull requests:
+
+1. Calculation of size of buffer for `gl.glBufferData` should have been put into the *Point2DBuffer* class - add class variable `sizeOfBuffer` and move related calculation there.
+2. PolygonSceneObject.java polygon typo
