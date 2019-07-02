@@ -5,7 +5,7 @@
 Transformation includes following operations:
 
 1. `translate(x,y)`: Translation is the process of moving and object in space without changing any other parameters besides spacial positions (e.g., SHAPE/SCALE and etc won't change)
-
+    
 2. `rotate(degrees)`: Rotation is rotating objects around the origin (i.e., the object will only be rotated around a certain point - origin).
 
 3. `scale(x,y)`:Scaling is to scale along both axes (or scale across only one axis), -1 would flip the original axis.
