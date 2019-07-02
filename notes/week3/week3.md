@@ -123,7 +123,7 @@ Reference: [Shader - opengl-wiki](https://www.khronos.org/opengl/wiki/Shader)
 
 3D coordindate systems can be left  or right handed (right-handed is preferred here while left-handed is used when applying negation).
 
-![](chrome_i6L5bFW21u.png)
+![](img/chrome_i6L5bFW21u.png)
 
 Comparing 2D scenes, there are two new problems (parameters) to be introduced:
 
@@ -142,7 +142,7 @@ Comparing 2D scenes, there are two new problems (parameters) to be introduced:
     new Circle2D(0.5).draw(gl, frame);
     // result in circle overlaps square (polygon)
     ```
-    ![](java_WpUn33OvHA.png)
+    ![](img/java_WpUn33OvHA.png)
 
     * However, within 3D scene objects, it is difficult to decide the exact order for each of them.
 * OpenGL also has similar implementation for 3D scenes but with more complex mechanism - drawing with depth.
@@ -206,7 +206,7 @@ Potisitive rotation is CCW from the next towards the previous axis (recall right
 * My rotates z towards x
 * Mz rotates x towards y
 
-![](chrome_lA20GGuFRg.png)
+![](img/chrome_lA20GGuFRg.png)
 
 Finally, we have,
 
@@ -255,7 +255,7 @@ public class CoordFrame3D {
 
 Objects have faces in OpenGL. Take triangles as example. Counter-clockwise (abbv. CCW in OpenGL) vertices are defined as their front face, while the clockwise (CW) vertices are defined as their back face.
 
-![](chrome_eFK1v4SLDp.png)
+![](img/chrome_eFK1v4SLDp.png)
 
 #### Optimasation - Back face culling
 
@@ -303,7 +303,7 @@ Clipping is a method to seletively enable or disable rendering operations within
 
 * Orthographic projection
 
-    ![](chrome_HIeLXX1dtx.png)
+    ![](img/chrome_HIeLXX1dtx.png)
   * Depth: $q_x = p_x \\ q_y = p_y$
   * The depth formula above shows that there is no difference between an object in near plane and an object in far plane (i.e., not performing foreshortening)
   * Object size is independent of distance from the camera.
@@ -332,12 +332,12 @@ Clipping is a method to seletively enable or disable rendering operations within
 
 * Canonical view volume (CVV)
 
-    ![](chrome_r7atEeL23B.png)
+    ![](img/chrome_r7atEeL23B.png)
   * It is convenient for clipping if we scale all coordinates so that visble points lie within the range (-1, 1). And z axis are flipped - left handed system
 
 * Perspective view volume (or **frustum**)
 
-    ![](chrome_bmOJI8O2bw.png)
+    ![](img/chrome_bmOJI8O2bw.png)
 
     * Boundaries sometimes can be hard to derterimined. So, instead of
     ```java
@@ -351,7 +351,7 @@ Clipping is a method to seletively enable or disable rendering operations within
     ```
     where `float fovy` is the field of view y-axis - vertical angle of the camera's lens, `float aspectRatio` is $\frac{width}{height}$
 
-    ![](chrome_jdIxSZQujW.png)
+    ![](img/chrome_jdIxSZQujW.png)
 
     * The perspetice projection: since it is projection, we can construct two similar triangles either along x-axis or y-axis, so we have
 
@@ -368,7 +368,7 @@ These constraints yield an equation for pseudodepth:
 <!-- TODO: Understanding of this equation -->
 $$ q_z = \frac{ap_z + b}{-p_z} \\[5px] a = -\frac{f+n}{f-n} \\[5px] b = \frac{-2fn}{f-n} $$
 
-![](chrome_WSBJb5Vgxp.png)
+![](img/chrome_WSBJb5Vgxp.png)
 
 One thing about pseudodepth is that is rather curved than linear, more precision for objects closer to the near plane, while rounding errors worse towards far plane. <br>
 Avoid setting near and far needlessly small/big for better use of precision.
@@ -445,7 +445,7 @@ $$ M_p =
 \end{pmatrix}
 $$
 
-![](chrome_cf5dAUW6t6.png)
+![](img/chrome_cf5dAUW6t6.png)
 
 * Perspective divison step (normalise device coordinates)
 
@@ -466,7 +466,7 @@ w_s/2 & 0 & 0 & s_x + w_s/2 \\
 0 & 0 & 0 & 1 \end{pmatrix}
 $$
 
-![](chrome_TMbjtDUZeM.png)
+![](img/chrome_TMbjtDUZeM.png)
 
 ## Transformation pipeline
 
@@ -514,7 +514,7 @@ $$
 
 However, there are certain images are difficult to apply this naive method.
 
-![](chrome_S3xO8QJiDF.png)
+![](img/chrome_S3xO8QJiDF.png)
 
 > Painter's algorithm can still be applied here but less efficient. <br>
 > Cut down to mulitple polygons
@@ -561,6 +561,6 @@ Bascially, it is keeping record of least pseudodepth for depth buffer and updati
             db[x][y] = d
 ```
 
-![](chrome_4wAWQNGsPF.png)
-![](chrome_JLHI7U3kS5.png)
-![](chrome_qgw0Vps9K1.png)
+![](img/chrome_4wAWQNGsPF.png)
+![](img/chrome_JLHI7U3kS5.png)
+![](img/chrome_qgw0Vps9K1.png)
