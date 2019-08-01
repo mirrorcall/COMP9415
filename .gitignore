@@ -1,3 +1,9 @@
-UNSWgraph
+UNSWgraph*
 quiz/*.class
 
+# temp files for markdown preview
+notes/*.temp
+
+*.zip
+
+*vscode*

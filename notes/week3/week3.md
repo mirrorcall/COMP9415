@@ -361,7 +361,7 @@ Clipping is a method to seletively enable or disable rendering operations within
 
 ## Pseudodepth
 
-Depth is still required to determine which pointd are in front. And this information should be clampped between -1 and 1. Pseudodepth preserves front-to-back ordering.
+Depth is still required to determine which points are in front. And this information should be clampped between -1 and 1. Pseudodepth preserves front-to-back ordering.
 
 These constraints yield an equation for pseudodepth:
 
@@ -418,7 +418,7 @@ $$
 
 * To transform a point:
 
-$$ q = M_{perspective}P \\[2px]
+$$ q = M_{perspective}P \\[2ex]
 = \begin{pmatrix}
 n & 0 & 0 & 0 \\
 0 & n & 0 & 0 \\
@@ -426,7 +426,7 @@ n & 0 & 0 & 0 \\
 0 & 0 & -1 & 0 \end{pmatrix}
 \begin{pmatrix}
 p_x \\ p_y \\ p_z \\ 1
-\end{pmatrix} \\[2px]
+\end{pmatrix} \\[2ex]
 = \begin{pmatrix}
 np_x \\ np_y \\ ap_z + b \\ -p_z \end{pmatrix}
 \equiv \begin{pmatrix}
