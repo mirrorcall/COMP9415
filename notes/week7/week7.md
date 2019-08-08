@@ -389,3 +389,168 @@ We can compute a projection extent of a mesh by projecting all teh vertices into
 Another approach to optimisation is to build a Binary Space Partitioning (BSP) tree dividing the world into cells, where each cell contains a small number of objects.
 
 ![](img/chrome_24.png)
+
+#### Traversing the tree
+
+If a ray passing through, we do not want to traverse the entire tree. Instead, we only want to visit the leaves the ray passes through.
+
+![](img/chrome_25.png)
+
+#### Traversal algorithm
+
+```
+visit(E, v, node): (E eye)
+    if (node is leaf):
+        intersect ray with objs in leaf
+    else:
+        if (E on left):
+            visit(E, v, left)
+            other = right
+        else:
+            visit(E, v, right)
+            other = left
+        endif
+
+        if (ray crosses boundary):
+            E' = intersect(E, v, boundary)
+            visit(E', v, other)
+        endif
+    endif
+```
+
+## Scattering (NOT EXAMINABLE)
+
+> Scattering (or subsurface scattering) is when light refracts into an object that is **non-uniform** in its density and is reflected out at a different angle and position.
+
+![](img/chrome_26.png)
+
+Milk is a substance that has this property as well as skin, leaves and wax. Typically, they are hard to render.
+
+[More in detail](http://graphics.ucsd.edu/~henrik/images/subsurf.html)
+
+## What Raytracing Can't Do
+
+Basic recursive raytracing cannot do:
+
+* Light bouncing off a shiny surface like a mirror and illuminating a diffuse surface
+* Light bouncing off one diffuse surface to illuminate others
+* Light transimitting then diffusing internally
+
+Also a problem for rough specular reflection:
+
+* Fuzzy reflections in roughy shiny objects
+
+## Realtime ray-tracing (RTX)
+
+> This is the recent Nvidia innovation supported via specialised hardware. Programss have to be written to use it, but it fits in quite well with existing graphics pipelines.
+
+> Works by arranging objects in a bounding volume hierarchy (BVH), where specialised hardware offers fast traversal of these hierarchies to find ray intersections.
+
+## Bounding Volume Hierarchy (BVH)
+
+Scene is divided into small volumes. Child volumes are contained entirely within their parents. Sibiling volumes may overlap.
+
+![](img/chrome_27.png)
+
+Parents can have an arbitrary number of children. The best way to divide up the scene depends on a lot of factors.
+
+#### Top down construction
+
+Divide the set of primitives in the scene into two (or more) subsets then recursively subdivide those until all subsets contain only one primitive.
+
+Properties:
+
+* Easy to implement
+* Usually faster than alternatives
+* Doesn't always produce the best possible tree
+  
+#### Bottom up construction
+
+Treat all primitives in the scene as a set of leaves. Pick two (or more) of them and group them into a node. Repeat till there is only one node in the set.
+
+Properties:
+
+* Slower than top-down in most cases
+* More difficult to implement
+* Tends to produce better trees
+
+## Volumetric ray tracing
+
+We can also apply ray tracing to volumetric objects like smoke or fog or fire. Such objects are transparent but have different intensity and transparency throughout the volume.
+
+We represent the volume as two functions:
+
+$$ \begin{aligned}
+    C(P) &= \text{color at point} P \\[2ex]
+    \alpha(P) &= \text{transparency at point} P
+\end{aligned} $$
+
+Typically these are represented as values in a 3D array. Interpolation is used to find values at intermediate points. These functions may in turn be computed based on density, lighting or other phsical properties.
+
+#### Sampling
+
+We cast a ray from the camera through the volume and take samples at fixed intervals along the way.
+
+![](img/chrome_28.png)
+
+We end up with (N+1) samples:
+
+$$ \begin{aligned}
+    P_i &= R(t_{hit} + i \Delta t) \\[2ex]
+    C_i &= C(P_i) \\[2ex]
+    \alpha_i &= \alpha(P_i) \\[2ex]
+    C_N &= (r,g,b)_{background} \\[2ex]
+    \alpha_N &= 1
+\end{aligned} $$
+
+#### Alpha compositing
+
+We now combine these values into a single color by applying the alpha-blending equation.
+
+$$ \begin{aligned}
+    C_N^N &= C_N \\[2ex]
+    C_N^i &= \alpha_i C_i + (1 - \alpha_i) C_N^{i+1}
+\end{aligned} $$
+
+where, 
+
+* $C_N^i$ is the total color at $i$
+* $\alpha_i C_i$ is the local color at $i$
+* $C_N^{i+1}$ is the total color at $i+1$
+
+We can write a closed formula for the color from `a` to `b` as:
+
+$$ C_b^a = \sum_{i=a}^b \alpha_i C_i \prod_{j=a}^{i-1} (1 - \alpha_j) $$
+
+---
+
+#### Exercise
+
+Suppose we have a background color of (0,1,0) and a volume with the uniform color of (1,0.5,0.5). A ray cast through that volume takes two samples. The first has an alpha value of 0.2 and the seond 0.1. What is the color of the resulting pixel?
+
+Recall the previous graph from **Sampling**, the ray is passing through the volume from the camera to the background.
+
+![](img/chrome_28.png)
+
+$$
+\text{Background Color}\ C_N = (0,1,0) \\[2ex]
+\text{Uniform Color of Volume}\ C_i = (1,0.5,0.5) \\[2ex]
+
+\alpha_0 = 0.2 \\[2ex]
+\alpha_1 = 0.1 \\[2ex]
+
+C_2^2 = (0,1,0) \\[2ex]
+C_2^1 = \alpha_1 C_i + (1-\alpha_1)C_2^2 \\[2ex]
+
+C_2^0 = \alpha_0 C_i + (1-\alpha_2)C_2^1
+$$
+
+---
+
+We can compute this function from front to back, stopping early if the transparency term gets small enough that nothing more can be seen.
+
+#### Implementation in `OpenGL`
+
+Volumetric ray tracing (AKA. ray casting) does not require a full ray tracing engine. It can be implemented in `OpenGl` as a fragment shader applied to a cube with a 3D texture.
+
+[Clouds tutorial](https://www.shadertoy.com/view/XslGRr)

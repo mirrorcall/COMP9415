@@ -352,7 +352,7 @@ where $m$ is the degree of the curve and $P_0 \cdots P_m$ are the control points
 
 #### Bernstein polynomials
 
-The coefficient function $B_k^m(t)$ are called *Bernstein polynomials* of general form:
+The     coefficient function $B_k^m(t)$ are called *Bernstein polynomials* of general form:
 
 $$ B_k^m(t) = \binom{m}{k} t^k (1-t)^{m-k} $$
 

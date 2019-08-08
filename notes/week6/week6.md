@@ -700,6 +700,10 @@ It is common to apply weights to the samples to favour values in the centre of t
 
 The problem for supersampling in a grid is that still tends to produce noticeably regular aliasing effects. Adding small amounts of *jitter* to the sampled points makes aliasing effects appear as visual noise.
 
+#### Double Sampling
+
+Divide one pixel to four sub-pixels, and do the sampling on the nine according vertices.
+
 #### Adpative Sampling
 
 Supersampling in large areas of uniform color is wasterful, while it is most useful in areas of major color change. One solution to it is to sample recursively, at finer levels of detail in areas with more color variance.
