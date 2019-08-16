@@ -451,6 +451,8 @@ If our light sources and large portions of the geometry are static then we can p
 
 ## Normal Mapping
 
+**What normal mapping does is to render the fake lights for bumps and dents**.
+
 We made assumption that the surface of the polygon is smoothly curved when interpolating normals in a Phong Shader.
 
 > What if the surface is actually rough with many small deformities?

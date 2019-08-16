@@ -302,6 +302,8 @@ where $I(P)$ is the amount of light coming from P to the camera.
 Works for any convex polygons (vertices MUST be in CCW order). Pick two (non-parallel) adjacent edges and calculate:
 $$ \textbf{n} = (P_{i+1} - P_i) \times (P_{i-1} - P_i) $$
 
+**If we are looking for the normalized face normals, remember to normalize the result of the cross product. Two unit vectors do not guarantee a unit vector as the result of cross product.**
+
 ![](img/figure4.png)
 
 **matrix notation**
@@ -445,8 +447,9 @@ $$ I = \sum_{l \in lights} I_a^l \rho_a + max(0, I_s^l\rho_d(\hat{\textbf{s}}\cd
 * To make a light move with an object in the scene make sure it is subject to the same modelling transformation as the object - move lights.
 
 * Point sources emit equally in all directions for some objects like headlights or torches. A spotlight has a direction and a cutoff angle. Spotlight are also attenuated, so the brightness falls off as you move away from the center.
-Where $\epsilon$ is the attenuation factor (exponent)
 
 $$ I = I_s(cos(\beta))^{\epsilon} $$
 
+Where $\epsilon$ is the attenuation factor (exponent)
+    
 ![](img\chrome_EZWIfhYwyJ.png)
