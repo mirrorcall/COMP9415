@@ -55,6 +55,8 @@ Note bilinear interpolation can also be applied on x-axis and then on y-axis.
 
 ## Z-fighting
 
+**Caused by the limited precision of depth buffer for two overlapping polygons**
+
 Mainly caused by the limited precision of depth buffer (usually 16 bits). Happens if two or more polygons are parallel small rounding errors will cause them to "fight" for which one appear to be the front.
 
 #### Solution
@@ -171,6 +173,37 @@ Clip(px, py, qx, qy):
  ![](img/chrome_kYolWg5pYB.png)
  ![](img/chrome_Yi9FnJfALN.png)
 
+#### Cyrus-Beck
+
+* Initalize $t_{in}$ to 0 and $t_{out}$ to 1
+* Compare the ray to each edge of the (convex) polygon
+* Compute $t_{hit}$ for each edge
+* Keep track of maximum $t_{in}$
+* Keep track of minimum $t_{out}$
+
+## Ray colliding with segment
+
+![](img/chromesupplement_4.png)
+
+Given
+
+* Parametric ray: $R(t) = A + ct$
+* Point normal segment: $\textbf{n} \cdot (P-B) = 0$
+* Collide when: $\textbf{n} \cdot (R(t_{hit}) - B) = 0$
+
+#### Hit time
+
+> Following formulae can be deriven from the equations above
+
+$$ t_{hit} = \frac{\textbf{n} \cdot (B-A)}{\textbf{n} \cdot \textbf{c}} $$
+$$ P_{hit} = A + \textbf{c} \cdot t_{hit} $$
+
+## Entering / exiting
+
+Firstly, assuming all normals **point out** of the polygon
+
+![](img/chromesupplement_5.png)
+
 <br><br>
 
 ---
@@ -178,6 +211,8 @@ Clip(px, py, qx, qy):
 # Week 4 - B
 
 ## Meshes
+
+**We represent 3D objects as *polygonal meshes***.
 
 * Triangle meshes are polygonal meshes that only contain triangles.
 * At the cost of requiring more memory.
@@ -209,8 +244,7 @@ Similarly applying to the triangle mesh instead of polyonal mesh
 
 ```java
 // Draw something using indexed data
-gl.glDrawElements(int mode, int count, int type,
-                long offset);
+gl.glDrawElements(int mode, int count, int type, long offset);
 //mode - GL_TRIANGLES etc
 //count - number of indices to be used
 //type - type of index array
@@ -259,13 +293,13 @@ Firstly, we will only consider the illumination which has no color but simply an
 
 #### Diffuse reflection
 
-Normally happens to the *dull* or *matte* surfaces. Light falling on the surface is reflected uniformly in all directions. It does not depend on the viewpoint.
+Normally happens to the *dull* or *matte* surfaces. Light falling on the surface is reflected uniformly in all directions. **It does not depend on the viewpoint**.
 
 ![](img/figure1.png)
 
 #### Specular reflection
 
-Unlike the diffuse reflection, *polished* surfaces exhibit specular reflections. Light falling on the surface is reflected at the same angle. Reflections will look different from different viewpoints.
+Unlike the diffuse reflection, *polished* surfaces exhibit specular reflections. Light falling on the surface is reflected at the same angle. **Reflections will look different from different viewpoints**.
 
 ![](img/figure2.png)
 
@@ -283,8 +317,8 @@ where $I(P)$ is the amount of light coming from P to the camera.
 #### Modeling Normals (Normalization)
 
 * Every vertex has an associated normal
-* On flat surfaces, we want to use *face normals* set the normals perpendicular to the face.
-* On the contrary, when on curved surfaces, we may want to specify a different value for the normal, so the normals change more gradually over the curvature.
+* On **flat surfaces**, we want to use *face normals* set the normals perpendicular to the face.
+* On the contrary, when on **curved surfaces**, we may want to specify a different value for the normal, so the normals change more gradually over the curvature.
 * Smooth vs Flat Normals
 
 ![](img/figure3.png)
@@ -342,7 +376,7 @@ For smooth surfaces we can calculate each normal based on
 $$ I_d = I_s \rho_d (\hat{\textbf{s}} \cdot \hat{\textbf{m}}) $$
 
 * where $I_s$ is the source intensity, and
-* $\rho_d$ is the diffuse reflection coefficient in [0,1]
+* $\rho_d$ is the diffuse reflection coefficient in [0,1], 0 for dark surfaces and 1 for light surfaces
 * NOTE: Both vectors are normalized
 
 ![](img/figure6.png)
@@ -350,7 +384,8 @@ $$ I_d = I_s \rho_d (\hat{\textbf{s}} \cdot \hat{\textbf{m}}) $$
 * $\theta$ is equal to 0, $cos(\theta)$ is equal to 1 $\implies$ light is reflected back
 * $\theta$ is equal to 90, $cos(\theta)$ is equal to 0 $\implies$ none of the light is reflected back
 * $\theta$ is large than 90 $cos(\theta)$ gives negative value
-    * However, the light is on the wrong side of surface and the cosine is negative. In this case we wan the illumination to be zero.
+    * However, the light is on the wrong side of surface and the cosine is negative. In this case we want the illumination to be zero.
+    * That is what the **Ambient Light** is coming for.
 
 $$ I_d = max(0, I_s\rho_d(\hat{\textbf{s}} \cdot \hat{\textbf{m}})) $$
 
@@ -380,7 +415,7 @@ The Phong equation is:
 
 $$ I_{sp} = max(0, I_s \rho_{sp} (\hat{\textbf{r}} \cdot \hat{\textbf{v}})^f) $$
 
-* $\rho_{sp}$ is the specular reflection coefficient in the ranger [0,1]
+* $\rho_{sp}$ is the specular reflection coefficient in the range [0,1]
 * $f$ is the Phong exponent, typically in the ranger [1,128]
 * $r$ is the reflection vector
 * $v$ is the view vector (vector towards camera)
@@ -413,7 +448,7 @@ $$ I_{sp} = max(0, I_s\rho_{sp}(\hat{h} \cdot \hat{m})^f) $$
 
 ## Ambient light
 
-**What this illumination really does is it add the detail to the back of the object**.
+**What this illumination really does is it add the detail to the back of the object (i.e., $cos\theta$ is negative)**.
 
 Lighting with just diffuse and specular lights gives very stark shadows. In reality, shadows are not completely black. Light is coming from all directions of all objects instead of just single source. While it is computationally expensive to simulate the exact process.
 
@@ -438,13 +473,18 @@ For multiple lights, we conclude the lights from components from all of them.
 
 $$ I = \sum_{l \in lights} I_a^l \rho_a + max(0, I_s^l\rho_d(\hat{\textbf{s}}\cdot\hat{\textbf{m}})) + max(0, I_s^l\rho_{sp}(\hat{\textbf{r}}\cdot\hat{\textbf{v}})^f) $$
 
+## Limitations
+
+* Whether V is obscured from a light source by another object or shadows
+* Light that strikes V having bounced off other objects
+
 ## Other kinds of lights
 
 * The above lighting calculations are based on computing the source vector from a point in the world - point lights.
 
 * Some lights (like the sun) are so far away that the source vector is effectively the same everywhere (parallel) - directional lights.
 
-* To make a light move with an object in the scene make sure it is subject to the same modelling transformation as the object - move lights.
+* To make a light move with an object in the scene make sure it is subject to the same modelling transformation as the object - moving lights.
 
 * Point sources emit equally in all directions for some objects like headlights or torches. A spotlight has a direction and a cutoff angle. Spotlight are also attenuated, so the brightness falls off as you move away from the center.
 
@@ -453,3 +493,14 @@ $$ I = I_s(cos(\beta))^{\epsilon} $$
 Where $\epsilon$ is the attenuation factor (exponent)
     
 ![](img\chrome_EZWIfhYwyJ.png)
+
+## Exercise
+
+1. Assuming a rectangle with bounds `left = -1, right = 1, bottom = -1 and top = 1`, clip the line from `P = (-1.5, 2) to Q = (0, 0)`.
+
+    1. Apply the `Cohen-Sutherland's Clipping Algorithm` first
+    2. Using similar triangle to find the coordinate of new vertices.
+
+2. Given the clipping rectangle with bottom-left corner (1,1) and top-right corner (4,5), apply the Cohen-Sutherland algorithm to clip the following lines:
+   
+   `A (3, 0) - B (5, 2)`

@@ -3,27 +3,29 @@
 ## Recap
 
 * View transform:
-    * Word coordinate is rendered as it appears in the camera's local coordiante frame.
+    * World coordinate is rendered as it appears in the camera's local coordiante frame.
     * The view transform converts the world coordinate frame into the camera's local coordinate frame
 * Inverse transformations:
-    * Local-to-global transformation is $Q = M_TM_RM_S\ P$
-    * On the contrary, global-to-local transformation is $P = M_S^{-1}M_R^{-1}M_T^{-1}\ Q$
-    * translation: $M_T^{-1}(d_x,d_y) = M_T(-d_x, -d_y)$
-    * roatation: $M_R^{-1}(\theta) = M_R(-\theta)$
-    * scale: $M_S^{-1}(s_x,s_y) = M_S(1/s_x,1/s_y)$
-    * shear: $M_H^{-1}(h) = M_H(-h)$; however, this operation we don't do much.
+    * Local-to-global transformation is $Q = \textbf{M}_T\textbf{M}_R\textbf{M}_S\ P$
+    * On the contrary, global-to-local transformation is $P = \textbf{M}_S^{-1}\textbf{M}_R^{-1}\textbf{M}_T^{-1}\ Q$
+    * translation: $\textbf{M}_T^{-1}(d_x,d_y) = \textbf{M}_T(-d_x, -d_y)$
+    * roatation: $\textbf{M}_R^{-1}(\theta) = \textbf{M}_R(-\theta)$
+    * scale: $\textbf{M}_S^{-1}(s_x,s_y) = \textbf{M}_S(1/s_x,1/s_y)$
+    * shear: $\textbf{M}_H^{-1}(h) = \textbf{M}_H(-h)$; however, this operation we don't do much.
 * Reparenting of the scene tree
     * rotation: $r_{Table} + r_{Bottle}$
     * scale: $s_{Table} \times s_{Bottle}$
-    * **translation**: is different from the first two, it dooes need to perform the local-to-global transformation first.
+    * **translation**: is different from the first two, it dooes need to perform the global-to-local (calculating global coordinate first then the global coordinate should not be affected by reparenting) transformation first.
 
 > If it really comes to the shear, check dot product of the matrices is equal to zero
 
 ## Lerping (Linear interpolation)
 
-This is now the time affine transformation (homogenous vector) working on the addtion of two points (orginally, not working for addtion for two points because of $1 + 1 = 2$). 
+This is now the time affine transformation (homogenous vector) working on the addtion of two points (orginally, not working for addition for two points because of $1 + 1 = 2$). 
 
 $$ \frac{1}{2}(p_1,p_2,1)^T + \frac{1}{2}(q_1,q_2,1)^T = (\frac{p_1+q_1}{2}, \frac{p_2,q_2}{2},1)^T $$
+
+A naive derivation for the formula is firstly, a point adds to a vector results a new point. Based on $(v.x, v.y, 0)^T + (p.x, p.y, 1)^T = (x, y, 1)^T$, the result is clearly a point.
 
 Linear interpolation
 $$ lerp(P,Q,t) = P + t(Q-P) $$
@@ -41,8 +43,8 @@ $$ midpoint = (3.5, 8) $$
 
 * Parametric form:
 
-$$ L(t) = P+tv $$
-$$ v = Q - P $$
+$$ L(t) = P+t\textbf{v} $$
+$$ \textbf{v} = Q - P $$
 $$ L(t) = P + t(Q-P) $$
 
 
@@ -71,11 +73,14 @@ Finally, subustitute result of $L_{AB}$ into point-normal form, the resulting fo
 
 It is of great importance to determine whether the point is in or out of the polygon when drawing the polygons.
 
-* One simple of finding whether the point is side or outside the a simple polygon is to test how many times a ray, starting from the point and going in the any fixed direction, intersects the edge of polygon.
+* One simple way of finding whether the point is side or outside the a simple polygon is to test how many times a ray, starting from the point and going in the any fixed direction, intersects the edge of polygon.
   * If the point is outside the polygon, the ray will intersects its edge an **even** number of time, while **odd** number of times implying it is inside the polygon
 * For the difficult points which are crossing the actual vertex of the polygon, the detection now becomes only counting crossings at the lower vertex of an edge.
 
 ![example](https://cdncontribute.geeksforgeeks.org/wp-content/uploads/polygon1.png)
+
+![](img/chrome_1.png)
+![](img/chrome_3.png)
 
 Reference: [Computational Geometry in C,P'Rourke](htts://cs.smith.edu/~orourke/books/compgeom.html)
 
@@ -83,7 +88,9 @@ Reference: [Computational Geometry in C,P'Rourke](htts://cs.smith.edu/~orourke/b
 
 ![](https://i.stack.imgur.com/tLrbS.png)
 
-Shaders are programs executed on the GPU for the purpose of rendering graphics written in GLSL (GL Shader Language).
+#### Vertex shaders
+
+Shaders are programs executed on the GPU for the purpose of rendering graphics written in GLSL (GL Shader Language). The GPU will execute the vertex shader for every vertex we supply it. That is saying, if we are drawing a triangle, the vertex shader will execute three times.
 
 Stages may or may not include but at least one of them:
 
@@ -93,27 +100,57 @@ Stages may or may not include but at least one of them:
 * Fragment Shaders
 * Compute Shaders 
 
+```glsl
+// Incoming vertex position
+in vec2 position;
+
+void main() {
+    // gl_Position contains the position of the current vertex
+    // Variables starting with 'gl_' are built-in and have special meaning
+    gl_Position = vec4(position, 0, 1);
+}
+```
+
 > OpenGL-Wiki: A shader is of purpose to execute one of the programming stages of the rendering pipeline. There are multiple stages each of which is specificed to its very own stage.
 
 #### Fragment Shaders
 
-The GPU will execute the fragment shader for every pixel it draws into the framebuffer <br>
-Fragment shaders is useful when drawing a color gradient effect because it requires drawing pixel-by-pixel in different color.<br>
+The GPU will execute the fragment shader for every pixel it draws into the framebuffer. Fragment shaders is useful when drawing a color gradient effect because it requires drawing pixel-by-pixel in different color. That is saying, if we are drawing a triangle, the fragment shader will execute for every pixel that gets filled in.
+
 The colors along the line through those points can be calulated by linear interpolation (*lerp*).
+
+```glsl
+out vec4 outputColor;
+
+uniform vec3 input_color;   // if there is color being input
+
+void main() {
+    // Ouput black
+    // The first three are RGB values
+    outputColor = vec4(0, 0, 0, 0);
+    // Output color with specific input color
+    // outputColor = vec4(intput_color, 0);
+}
+```
 
 Reference: [Vertex shaders vs Fragment shaders - stackoverflow](https://stackoverflow.com/questions/4421261/vertex-shader-vs-fragment-shader)
 
 Reference: [Shader - opengl-wiki](https://www.khronos.org/opengl/wiki/Shader)
 
+#### Using Sahders
+
+To set the current shader in using: `gl.glUseProgram(shaderProgramID);`
 
 #### GLSL Syntax
 
 * NO printf (so no characters and etc)
 * NO recursion
 * NO double precison (this is where shaders might be failed, by zooming in for a while - see more details of the graphics - gl would not be able to keep the precision.)
-* YES to supporting of matrices (vec2/vec3/vec4)
+* YES to supporting of matrices (vec2/vec3/vec4) of float type
 * `in` and `out` implying input and output respectively
-* `uniform` are inputs to the shader that are the same for every vertex
+* `uniform` are inputs to the shader that are the same for every vertex (like global variables in C) adn are read-only
+* `gl_Position` is a homogenous point in 3D (acutally the point in CVV coordinates, and that's the last userland operation, the following operations are OpenGL internal implementation)
+* `outputColor` is a homogenous point in 3D, the first three components are the RGB values.
 
 ---
 
@@ -373,6 +410,8 @@ $$ q_z = \frac{ap_z + b}{-p_z} \\[5px] a = -\frac{f+n}{f-n} \\[5px] b = \frac{-2
 One thing about pseudodepth is that is rather curved than linear, more precision for objects closer to the near plane, while rounding errors worse towards far plane. <br>
 Avoid setting near and far needlessly small/big for better use of precision.
 
+**Fun Fact: The reason why the depth buffer is non-linar is that make things more efficient (approximation for the object in the far plane objects). Differentiating depth between close objects is more important than differentiating depth between far objects.**
+
 ## Homogeneous coordinates
 
 The fourth component are now no longer concontrainting to 0 and 1 but any numbers other than just zero and one. Hence, we have,
@@ -448,6 +487,8 @@ $$
 ![](img/chrome_cf5dAUW6t6.png)
 
 * Perspective divison step (normalise device coordinates)
+
+**Canonical View Volume Coordinate is not a homogenous coordinate, to normalize it as a homogenous coordinate, we apply the division step to remove the $w$ from the fourth component**
 
 $$ Q = \frac{1}{w}\begin{pmatrix}
 p_x \\ p_y \\ p_z \\ w \end{pmatrix} \\[2px]
@@ -564,3 +605,28 @@ Bascially, it is keeping record of least pseudodepth for depth buffer and updati
 ![](img/chrome_4wAWQNGsPF.png)
 ![](img/chrome_JLHI7U3kS5.png)
 ![](img/chrome_qgw0Vps9K1.png)
+
+## Exercise
+
+1. Given this local coordinate frame
+
+    ```
+    CoordFrame2D.identity()
+            .translate(3,2)
+            .rotate(-45)
+            .scale(0.5,0.5);
+    ```
+
+    What point in the local coordinate frame would correspond to the world coordinate `Q (2,-1)`?
+
+2. Using linear interpolation, what is the midpoint between `A = (4,9)` and `B = (3,7)`?
+
+3. Calculate the view matrix given scene tree and camera transformation.
+
+    1. Calculate the camera matrix according to the scene tree
+    2. Get the gloabl translation accordingly as well as gloabl rotation and scale
+    3. VIEW MATRIX = INVERSE_CAMERA_GLOBAL_SCALE * INVERSE_CAMERA_GLOABL_ROTATION * INVERSE_CAMERA_GLOAL_TRANSLATION
+
+4. What happens if the field of view (FOVY) is changed to 90 degrees? 180 degrees? 240 degrees?
+
+    As the FOV gets larger, the squares shrink towards the midddle of the screen. At 180 degrees, they disappear. A FOV greater than 180 degrees is nonsensical.
