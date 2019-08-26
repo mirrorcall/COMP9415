@@ -334,10 +334,14 @@ $$ scale = |i| $$
 A sloid example:
 Given $\begin{pmatrix} 0 & -2 & 1 \\ 2 & 0 & 2 \\ 0 & 0 & 1 \end{pmatrix}$
 
-Translation: $(1, 2, 1)^T$ <br>
-Rotation: $atan2(2, 0) = 90\degree$ <br>
-Scale: $|i| = |j| = 2$
-Is shear: NO, cause $\textbf{i} \cdot \textbf{j} = 0$
+Translation: 
+$(1, 2, 1)^T$ <br>
+Rotation: 
+$atan2(2, 0) = 90$ <br>
+Scale: 
+$|i| = |j| = 2$ <br>
+Is shear: NO, cause 
+$\textbf{i} \cdot \textbf{j} = 0$
 
 ## Reparenting
 

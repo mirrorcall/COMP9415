@@ -2,14 +2,14 @@
 
 ## Radiosity
 
+**Radiosity takes into account light from all objects in the room, not just light sources. This means that shadows are much softer and realistic because it takes into account light from very many angles. As a result, the computational cost is much higher and this approach is typically not suited fo real-time rendering. However, the results of radiosity calculations can be baked into static light-maps and used in real time situations if the lights and objects in the scene are not moving.**
+
 > Radiosity is a global illumination technique that performs indirect diffuse lighting.
 
 ![](img/chrome_1.png)
 
-Direct lighting techniques only take into account light coming directly from a source.
-
+* Direct lighting techniques only take into account light coming directly from a source.
 * Raytracing takes into account specular reflections of other objects. 
-
 * Radiosity takes into account diffuse reflections of everything else in the scene.
 
 #### Ray tracing vs. Radiosity

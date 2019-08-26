@@ -1,5 +1,23 @@
 # Week 6A Textures
 
+## Debugging Meshes in OpenGL
+
+* Draw only the outline (i.e., without fill)
+
+    ```
+    glPolygonMode(GL.GL_FRONT_AND_BACK, GL3.GL_LINE);
+    ```
+
+* Turn off backface culling to see the full mesh
+
+    ```
+    gl.glDisable(GL.GL_CULL_FACE);
+    ```
+
+* Lighting problems might due to:
+  * Normal calculation
+  * vertex position in Shader
+
 ## Texturing
 
 * Texturing are a way to add detail to our models without requiring to many polygons
@@ -30,7 +48,9 @@
 * It is also possible to write code to compute the texture value at a point.
 * This can be good to generate materials like marbe or woodgrain.
 
-## Using Textures in `OpenGL`
+## Using Textures in OpenGL
+
+**Three main procedures for using textures in OpenGL.**
 
 1. Loading or creating textures
 2. Passing the texture to a shader
@@ -71,6 +91,7 @@ gl.glTexImage2D(
 * `GL.GL_REPEAT (default)`
 * `GL.GL_MIRRORED_REPEAT`
 * `GL.GL_CLAMP_TO_EDGE`
+* `GL.GL_CLAMP_TO_BORDER (disable repeat effect)`
 
 * ```java 
     // 
@@ -105,7 +126,7 @@ If `GL_REPEAT` is set, the use of texture coordinates outside [0,1] are going to
 
 #### Binding the texture
 
- OpenGL supports up to 32 simultaneously "active" textures, defined by constants `GL_TEXTURE0` up to `GL_TEXTURE31`. These values are distinct from a texture id
+ OpenGL supports **up to 32** simultaneously "active" textures, defined by constants `GL_TEXTURE0` up to `GL_TEXTURE31`. These values are distinct from a texture id
   
 In the fragment shader, tex is defined as `uniform sampler2D tex;`, while passed by callee with
 
@@ -125,9 +146,9 @@ $$ I(P) = T(s(P),t(P)) $$
 
 that produces objects which are not affected by lights or color.
 
-The **common solution*** is to use the texture to modulate the ambient and diffuse reflection coefficients:
+The **common solution** is to use the texture to modulate the **ambient and diffuse** reflection coefficients:
 
-$$ I(P) = T(s,t)[I_{\alpha}\rho_{\alpha}+I_d\rho_d (\hat{\textbf{s}} \cdot \hat{\textbf{m}})] + I_s\rho_s(\hat{\textbf{r}} \cdot \hat{\textbf{v}})^f $$
+$$ I(P) = T(s,t)*[I_{\alpha}\rho_{\alpha}+I_d\rho_d (\hat{\textbf{s}} \cdot \hat{\textbf{m}})] + I_s\rho_s(\hat{\textbf{r}} \cdot \hat{\textbf{v}})^f $$
 
 Usually leave the specular term unaffected because it is unusual for the material color to affect specular reflections.
 
@@ -135,9 +156,11 @@ Usually leave the specular term unaffected because it is unusual for the materia
 
 ![](img/chrome_1.png)
 
+> Standard bilinear interpolation does not work because it fails to take into account ***foreshortening in tilted polygons***, as linear inteprolation perserves the false integrity of original texture, demonstrated below.
+>
 > Foreshortening is the visual effect or optical illusion that causes an object or distance to appear shorten than it actually is because it is angled toward the viewer.
 >
-> Additionally, an object os often not scaled evenly: a circle often appears as an ellipse and a square can appear as a trapezoid.
+> Additionally, an object is often not scaled evenly: a circle often appears as an ellipse and a square can appear as a trapezoid.
 
 
 #### Rendering the Texture
@@ -146,13 +169,15 @@ Usually leave the specular term unaffected because it is unusual for the materia
 
 ![](img/chrome_2.png)
 
-#### Hyperbolic interpolation
+#### Hyperbolic interpolation (NOT EXAMIBLE)
 
 While we want texture coordinates to interpolate linearly in world space, the perspective projection distorts the depth coordinate so that linear interpolation in *screen space* $\ne$ linear interpolation in *world space*. And hyperbolic interpolation does fix it.
 
+[More about Hyperbolic interpolation](http://web.cs.ucdavis.edu/~amenta/s12/perspectiveCorrect.pdf)
+
 ## 3D textures
 
-3D textures are made by adding an extra texture coordiante, instead of simple repeat in each face. This eliminates weird seams and distortions when a 2D texture is wrapper on a curve 3D surface.
+3D textures are made by adding an extra texture coordiante, instead of simple repeat in each face. **This, of course, eliminates weird seams and distortions when a 2D texture is wrapper on a curve 3D surface.**
 
 ## Magnification
 
@@ -164,29 +189,31 @@ Normal bitmap texture have finite detail (i.e., if we zoom in close we can see i
 
 ![](img/chrome_3.png)
 
-The alignment is probably not exact. The way to solve this is to find the nearest texel.
+#### Solution 1 - Nearest Texel
+
+The alignment is probably not exact. The way to solve this is to find the nearest texel for that pixel.
 
 ![](img/chrome_5.png)
 
-#### Bilinear Filtering
+#### Solution 2 - Bilinear Filtering
 
-The basic idea is to find the nearest four **texels** (not pixels) and use bilinear interpoaltion over them.
+The basic idea is to find the nearest four **texels** (not pixels) around the pixel and use bilinear interpoaltion over them.
 
 ![](img/chrome_6.png)
 
-No filtering vs. Filtering
+No filtering vs. Filtering. Filtering clearly does the better job.
 
 ![](img/chrome_7.png)
 
-#### Magnification Filtering
+#### Magnification filtering in OpenGL
 
 ```java
-// Bilinear filtering
+// Bilinear filtering - solution 2
 gl.glTexParameteri(GL.GL_TEXTURE_2D,
         GL.GL_TEXTURE_MAG_FILTER,
         GL.GL_LINEAR);
         
-// No bilinear filtering
+// No bilinear filtering - solution 1
 gl.glTexPararmeteri(GL.GL_TEXTURE_2D,
         GL.GL_TEXTURE_MAG_FILTER,
         GL.GL_NEAREST);
@@ -202,7 +229,9 @@ Compared to the **Magnification**, **Minification** indicates that there might b
 
 ![](img/chrome_9.png)
 
-## Aliasing
+## Aliasing - an example of minification
+
+**The problem is that one screen pixel overlaps multiple texels but taking its value from only one of those texels.**
 
 Aliasing occurs when samples are taken from an image at a lower resolution than repeating detail in the image. Aliasing is an effet that causes different signals to become indistinguishable when sampled.
 
@@ -245,7 +274,7 @@ gl.glTexParameteri(
 
 ## MIP mapping
 
-Mipmaps are precomputed low-resolution versions of a texture. Starting with a 512 $\times$ 512 texture we compute and store 256 $\times$ 256, 128, 64, 32, 16, 8, 4, 2, 1 versions (basically from $2^9$ to $2^0$, 10 groups in total).
+Mipmaps are precomputed low-resolution versions of a texture. Starting with a slightly lower resolution texture we compute and store 256 $\times$ 256, 128, 64, 32, 16, 8, 4, 2, 1. 
 
 This takes total $\frac{4}{3}$ memory of the original.
 
@@ -263,6 +292,8 @@ gl.glGenerateMipmap(GL.GL_TEXTURE_2D);
 The simplest approach is to use the **NEXT SMALLEST MIPMAP** for the required resolution.
 
 > To render a 40 $\times$ 40 pixel image, use the 32 $\times$ 32 pixel mipmap and magnify using magnification filter.
+>
+> **DO NOT forget to magification filter the texture of resulting Mipmap**
 
 #### MipMap Minification Filtering
 
@@ -320,7 +351,7 @@ Trilinear interpolation takes a much bigger sample instead of what it should be 
 
 ## RIP Mapping
 
-RIP mapping is an extension of MIP mapping which down-samples each axis and is a better approach to anisotropic filtering
+RIP mapping is an extension of MIP mapping which down-samples **each axis** and is a better approach to anisotropic filtering
 
 > A 256 $\times$ 256 iamge has copies at:
 >> 256 $\times$ 128, 256 $\times$ 64, ...<br>
@@ -361,6 +392,8 @@ Animated textures can be achieved by loading multiple textures and using a diffe
 
 ## Rendering to a texture
 
+**Idea of how a security camera implement**
+
 A common trick is to set up a camera in a scene, render the scene into an offscreen buffer, then copy the image into a texture to use as part of another scene.
 
 > E.g. Implementation a security camera in a game
@@ -390,7 +423,7 @@ To apply the reflection-mapped texture to the object we need to calculate approp
 
 * Pros: Produces reasonably convincing polished metal surfaces and mirrors.
 * Cons:
-  * Expensive: Requires 6 additional render passes per object
+  * Expensive: Requires 6 additional render passes (i.e., six faces in total) per object
   * Angles to near objects are wrong.
   * Does not handle self-reflections or recursive reflections
 
@@ -398,9 +431,11 @@ To apply the reflection-mapped texture to the object we need to calculate approp
 
 ![](img/chrome_17.png)
 
-> OpenGl also has sphere mapping support, although this usually produces more distortion and is not as effective as cube mapping.
+> OpenGL does also support sphere mapping, which produces more distortion and is not as effetive as cube mapping.
 
 ## Shadows
+
+**Shadow mapping is relatively fast and can usually be done in real time. It requires two extra rendering passes per light source, one to compute the shadow buffer and one to apply the shadows to the scene. The quality of the shadows is limited by the resolution of the shadow buffer. A higher resolution buffer gives better looking shadows but is more costly in terms of time and memory. Shadow edges are hard and appear jagged at low buffer resolutions.**
 
 Out lighting model does not currently produce shadows, which requires taking whether the light source is occluded by another object into account.
 
@@ -408,7 +443,7 @@ Out lighting model does not currently produce shadows, which requires taking whe
 
 #### Shadow buffering
 
-One solution is to keep a shadow buffer for each light source.
+**One solution is to keep a shadow buffer for each light source.**
 
 > The shadow buffer is like the depth buffer, it records the distance from the light source to teh cloest object in each direction.
 
@@ -422,9 +457,9 @@ When rendering a point P:
 * Project the point into the light's clip space.
 * Calculate the index (i,j) for P in the shadow buffers.
 * Calculate the pseudodepth $d$ relative to the light source.
-* If shadow [i,j] < $d$ then P is in the shadow.
+* If shadow[i,j] < $d$ then P is in the shadow.
 
-> Similar to the depth buffer, while it does requires rendering from both of light's perspective and camera's perspective.
+> Similar to the depth buffer, where it does require rendering from both of light's perspective and camera's perspective.
 
 #### Pros and Cons
 
@@ -433,11 +468,15 @@ When rendering a point P:
   * No knowledge or processing of the scene geometry is required
 * Cons:
   * More computation
-  * Shadow quality is limited by precision of shadow buffer. This may cause some aliasing artefacts.
-  * Shadow edges are hard. Nowadays, one solution to solve this is when rendering turning the reolsution really high.
+  * Shadow quality is limited by precision of shadow buffer. This may cause some aliasing artefacts, such as, perspective aliasing and projective aliasing. [Referece](https://docs.microsoft.com/en-us/windows/win32/dxtecharts/common-techniques-to-improve-shadow-depth-maps)
+  * Shadow edges are hard. Nowadays, one main solution to solve this is when rendering, turning the reolsution really high.
   * The scene geometry must be rendered once per light in order to generate the shadow map for a spotlight, and more times for an omnidirectional point light.
 
+  [Reading material](http://www.paulsprojects.net/tutorials/smt/smt.html)
+
 ## Light Mapping
+
+**Light mapping is wide used for the scenario when geometry models are static at low computational cost.**
 
 If our light sources and large portions of the geometry are static then we can precompute the lighting equations and store the results in textures called light maps. Also called *baked lighting*.
 
@@ -469,7 +508,7 @@ Instead we use textures called normal maps to simulate minor perturbations in th
 
 Rather than arrays of colors, normal maps can be considered as arrays of vectors. These vectors are added to the interpolated normals to give the appearance of roughness.
 
-> However, this does not reflect the reality of the shape of the meshes, but only the lighting effects. So, if we really approach the surface close, we won't seee any details for those deformities.
+> However, this does not reflect the reality of the shape of the meshes, but only the lighting effects. So, if we really approach the surface close (move across the z-axis), we won't seee any details for those deformities.
 
 ![](img/chrome_19.png)
 ![](img/chrome_20.png)
@@ -481,6 +520,12 @@ Rather than arrays of colors, normal maps can be considered as arrays of vectors
   * Does not affect silhouette
   * Does not affect occlusion calculation
 
+#### Advantages and disadvantages of normal mapping over adding extra polygons to represent detail
+
+* Advantages: Every polygon we add to the scene creates extra computation at every step of the pipeline: transforming, illumination, clipping, rasterising, etc. Having a large number of polygons is therefore very computationally expensive. Normal mapping allows us to represent rough surfaces with far fewer polygons.
+* Costs: Extra work has to be done in the textureing stage. Normals must be computed for each pixel on the surface and the illumination equation recalculated to include data from the normal map. The map itself must be stored in memory, doubling the amount of texture memory required.
+* Disadvantages: One problem with using normal maps is that they do not affect the outline of the object. So if the surface is viewed on an angle, it will appear flat. Also normal mapping only works for minor perturbances in the surface. Larger bumps should occlude other parts of the surface when viewed at an angle. Normal maps do not support this occlusion.
+
 #### Example
 
 ![](img/chrome_21.png)
@@ -491,7 +536,7 @@ Rather than arrays of colors, normal maps can be considered as arrays of vectors
 
 **Fragments** are like pixels but include color, depth, texture coordinate. They may also never make it to the screen due to hidden surface removal or culling.
 
-Rasterisation needs to be accurate and efficient. Therefore, simple integer calculations are preferred.
+Rasterisation needs to be accurate and efficient. Therefore, simple integer calculations are preferred (floating points cost computationally and create round errors).
 
 #### Problems with drawing lines in Slope-intercept Form
 
@@ -506,14 +551,15 @@ Rasterisation needs to be accurate and efficient. Therefore, simple integer calc
 
 ## Bresenham's algorithm
 
-**Assumption**: The line is in the first octant (i.e., x1 > x0, y1 > y0 and m $\le$ 1)
+#### Assumption
 
-**Idea**:
+The line is in the first octant (i.e., x1 > x0, y1 > y0 and m $\le$ 1, also means the y interception is zero)
+
+#### Idea
 
 * For each x we work out which pixel we set next
     * The next pixel with the same y value if the line passes below the midpoint between the two pixels
     * Or the next pixel with an increased y value if the line passes above the midpoint between the two pixels.
-
 
 **Testing above/below**:
 
@@ -559,13 +605,11 @@ for (int x = x0; x <= x1; x++) {
 
 3. And etc...
 
-> Relxing restrictions
->
->> Lines in the other quadrants can be drawn by symmertical versions of the algorithm.
->>
->> Careaful that drawing from P to Q and from Q to P set the same pixels.
->>
->> Horizontal and vertical lines are common enough to warrant their own optimised code.
+#### Relxing restrictions
+
+Lines in the other quadrants can be drawn by symmertical versions of the algorithm.
+**Careaful that drawing from P to Q and from Q to P set the same pixels.**
+Horizontal and vertical lines are common enough to warrant their own optimised code.
 
 ## Polygon filling
 
@@ -714,7 +758,11 @@ Supersampling in large areas of uniform color is wasterful, while it is most use
 ![](img/chrome_44.png)
 ![](img/chrome_43.png)
 
-#### In `OpenGL`
+#### Conclusion
+
+Prefiltering is most accurate but requires more computation, while Postfiltering can be faster. Accuracy depends on how many samples are taken per pixel. More samples means large memory usage.
+
+#### In OpenGL
 
 ```java
 // Implementation dependant, may not even do anything
@@ -733,3 +781,146 @@ capabilities.setNumSamples(4);
 capabilities.setSampleBuffers(true);
 ...
 gl.glEnable(GL.GL_MULTISAMPLE);
+```
+
+## Exercise
+
+1. Fix the error in the vertex shader:
+
+    ```c
+    // The following two lines are wrong as they are supposed to be output instead of input
+    in vec4 viewPosition;
+    in vec3 m;
+
+    // Hence, modified to
+    out vec4 viewPosition;
+    out vec3 m;
+
+    void main()
+    {
+        viewPosition = view_matrix * globalPosition;
+        // The following line is wrong as mentioned earlier, gl_Position is the CVV coordiante
+        gl_Position = viewPosition;
+
+        // Hence, applying projection matrix here
+        gl_Position = projection_matrix * viewPosition;
+    }
+    ```
+
+2. Fix the error in the fragment shader:
+
+    ```c
+    uniform vec3 lightIntensity;
+    uniform vec3 ambientIntensity;
+
+    uniform vec3 diffuseCoeff;
+    uniform vec3 ambientCoeff;
+
+    void main()
+    {
+        // The below two lines are wrong
+        float ambient = ambientIntensity * ambientCoeff;
+        float diffuse = diffuseIntensity * diffuseCoeff;
+
+        // The RGB-value for the light equation is calculated point-wise
+        // Hence the correct version would be
+        vec3 ambient = ambientIntensity * ambientCoeff;
+        vec3 diffuse = diffuseIntensity * diffuseCoeff;
+    }
+    ```
+
+3. What is a reason to use texture mapping rather than lots of little polygons? Are the two representations functionally equivalent? What are the differences?
+
+    > * Textures are flat and do not respond to the lighting (unless there are normal mapping)
+    > * Polygons can interact with the physical world, whereas the textures are just flat
+
+    Textures can be used to give the illusion of complex geometry while keeping the actual geometric complexity low. Rather than using textures, we could just add lots of polygons to the figure to model the extra details, but this would slow down drawing, and it would be a lot of work to figure out the extra points and faces that we want to add.
+
+    They are not functionally equivalent. Textures can be used to simulate small feature that are not actually there in the geometry so will not respond to lighting or in the same way. For example, if we shine light nearly parallel to given face on the glof ball, one side of the dimple should be light and the other should be dark, but this won't happend if we'are using textures. Textures also have resolution and aliasing issues.
+
+4. What is the difference between the following two textures filtering settings?
+
+    These are 2 different settings for maginification. If we are in a situation where one texel gets mapped to many pixels (like zooming in or enlarging a photo too much) we have 2 choices of filters.
+
+    `gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);` just chooses the cloest the texture coordinate value ouptut by the rasteriser. This is known as point sampling most subject to visible aliasing.
+
+    `gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);` is a filter that for 2D textures performs bilinear interpolation across the 4 nearest texels (2 texels in S direction and 2 texels in T direction) to create a smoother (sometimes blurrier) image. This approach is more expensive to compute.
+
+5. What are MipMaps? Why are they used?
+
+    They are pre-calculated, sequences of textures, each of which is a pregressively lower resolution representation of the same image. The height and width of each image, or level, in the mipmap is a power of two smaller than the previous level where each texel in the next level is calculated by averaging 4 of the parent texels.
+
+    These can help with nimification aliasing problems which can arise when more than one texel is mapped to one pixel (like zooming out). Without mip-mapping you can use similar fiters for minification as for magnification - `GL_NEAREST` and `GL_LINEAR`. With mip mappoing you can use `GL_NEAREST_MIPMAP_NEAREST` which returns the nearest mip map or GL_LINEAR_MIPMAP_LINEAR which is trilinear filtering where bilinear filtering is used on 2 of the nearest mipmaps and then interpolated.
+
+6. What does the anisotropic filtering do?
+
+    ```java
+    float flargest[] = new float[];
+    gl.glGetFloatv(GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, fLargest[0]);
+    gl.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest[0]);
+    ```
+
+    Turning on anisotropic filtering. Like trilinear filtering, anisotropic filtering is used to eliminate aliasing effects, but improves on trilinear filtering by reducing blur and preserving detail at extreme viewing angles. Anisotropic can take a different number of samples in the horizontal vs. vertical directions depending on the projected shape of the texel. Where as isotropic (trilinear/mipmapping) always filters the same in each direction.
+
+    Different degrees or ratios of anisotropic filtering can be applied udring rendering and current hardware rendering implementations set an upper bound on this ratio. This code finds out the maximum level of filtering for the current implementation and sets the filter to this max level.
+
+    For best results, combine anisotropic filtering with a mipmap minification filter.
+
+7. Scanline Algorithm
+
+    ![](img/POWERPNTsupplement_8.png)
+
+8. Sampling method
+
+    ![](img/chromesupplement_9.png)
+
+    1. Sampling in the centre of the pixel
+
+        0, as the centre of the pixel is not of any color at all.
+
+    2. Sampling at the corners and taking the average
+
+        1/4, as only the bottom right corner is colored.
+
+    3. Double sampling and taking the average
+
+        Double sampling will split one pixel into sub-four pixels, and nine vertices in total. 2/9, as the middle right and bottom right are colored.
+
+    4. Double sampling and using the following mask to perform a weighted average
+
+        ```
+        1/16    1/16    1/16
+        1/16    1/2     1/16
+        1/16    1/16    1/16
+        ```
+
+        1/16 + 1/16 = 1/8, same as above but with weights now.
+
+9. Write a vertex and fragment shader that assigns the fragment based on modulating the appropriate texel.
+
+    ```glsl
+    // vertex shader
+    
+    out vec2 texCoord;
+
+    void main(void) {
+        gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+        gl_FrontColor = gl_Color;
+        texCoord = vec2(gl_MultiTexCoord0);
+    }
+    ```
+
+    ```glsl
+    in vec2 texCoord;
+    
+    uniform sampler2D texUnit;  // first texture
+    uniform sampler2D texUnit2; // second texture
+
+    void main(void) {
+        // applying second texture for the back face
+        if (gl_FrontFacing)
+            gl_FragColor = texture(texUnit, texCoord) * gl_Color;
+        else
+            gl_FragColor = texture(texUnit2, texCoord) * gl_Color;
+    }
+    ```

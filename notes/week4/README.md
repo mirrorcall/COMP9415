@@ -504,3 +504,9 @@ Where $\epsilon$ is the attenuation factor (exponent)
 2. Given the clipping rectangle with bottom-left corner (1,1) and top-right corner (4,5), apply the Cohen-Sutherland algorithm to clip the following lines:
    
    `A (3, 0) - B (5, 2)`
+
+   ![](img/POWERPNTsupplement_10.png)
+   ![](img/POWERPNTsupplement_11.png)
+   ![](img/POWERPNTsupplement_12.png)
+   ![](img/POWERPNTsupplement_13.png)
+   ![](img/POWERPNTsupplement_14.png)

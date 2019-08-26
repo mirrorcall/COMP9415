@@ -9,6 +9,14 @@
 
 Viewport is the piece of the screen we are drawing on. In following applications, it is always a rectangle having it own coordinate system.
 
+#### Viewport vs. Screen space
+
+Viewport and screen space rerepsent the same area, whereas they differentiate from coordinates. Viewport is mapped from `[-1, 1]`, while screen is mapped from `[Width, height]`
+
+#### Simple version of pipeline
+
+`local space -> world space -> camera space -> clip space -> view space -> screen space`
+
 ## Coordinate system
 
 By default the viewport is centred at `(0, 0)`. The left boundary is at `x = -1`, the right at `x = 1`, the bottom at `y = -1` and the top at `y = 1`.
@@ -25,7 +33,7 @@ By default the viewport is centred at `(0, 0)`. The left boundary is at `x = -1`
 (-1,-1)              (1,-1)
 ```
 
-If the point to be drawn is out of the boundry, you have to scale it down to fit the coordinate system and you window size.
+If the point to be drawn is out of the boundry, you have to scale it down to fit the coordinate system and your window size.
 
 ## First tangling with OpenGL
 
@@ -201,7 +209,7 @@ Transformation includes following operations:
     
 2. `rotate(degrees)`: Rotation is rotating objects around the **origin** (i.e., the object will only be rotated around a certain point - origin).
 
-3. `scale(x,y)`:Scaling is to scale along both axes (or scale across only one axis), -1 would flip the original axis.
+3. `scale(x,y)`: Scaling is to scale along both axes (or scale across only one axis), -1 would flip the original axis.
 
 **All the operations, other than `translate`, will not modify the position of the origin**
 
@@ -359,7 +367,7 @@ $$ b \cdot (a \times b) = 0 $$
 
 6. Find the angle between vectors `(1,1)` and `(-1,-1)`
 
-    $$ cos\theta = \frac{\textbf{v}_1 \cdot \textbf{v}_2}{|\textbf{v}_1||\textbf{v}_2} = \frac{-2}{2} = -1 \\
+    $$ cos\theta = \frac{\textbf{v}_1 \cdot \textbf{v}_2}{|\textbf{v}_1||\textbf{v}_2|} = \frac{-2}{2} = -1 \\
     arccos\theta = 180 $$
 
 7. Is vector `(3,4)` perpendicular to `(2,1)`
@@ -384,4 +392,4 @@ $$ b \cdot (a \times b) = 0 $$
 
 10. Why we are using `FloatBuffer` over `float[]` for OpenGL
 
-    Why we are rendering the objects, it generally contains tons of the process of data exchanging (points and etc). Hence, `FloatBuffer` here, a buffer or floating point values pinned (or fixed) in memory, is suitable for passing to a third party library. A float array, `float[]`, is stored in the heap of java kept moving around or copying around during the garbage collection.
+    When we are rendering the objects, it generally contains tons of the process of data exchanging (points and etc). Hence, `FloatBuffer` here, a buffer or floating point values pinned (or fixed) in memory, is suitable for passing to a third party library. A float array, `float[]`, is stored in the heap of java kept moving around or copying around during the garbage collection.

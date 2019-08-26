@@ -2,7 +2,9 @@
 
 ## Particle systems
 
-Some visual phenomena (such as, raining, snowing, fire, smkoe and dust) are best modelled as *collections of small particles*.
+**Volumetric objects like fire, smoke and clouds are usually implemented as either *particle systems* or using *volumetric ray tracing***
+
+Some visual phenomena (such as, raining, snowing, fire, smoke and dust) are best modelled as *collections of small particles*.
 
 Particles are usually represented as small textured quads or point sprites - single vertices with an image attached. They are *billboarded*.
 
@@ -47,33 +49,48 @@ In reality, the light falling on a surface comes from everywhere. Light from one
 
 There are two main methods for **global lighting**:
 
-1. Raytracing: models specular reflection and refraction.
-2. Radiosity: models diffuse reflection.
+1. Raytracing: models **specular** reflection and refraction.
+2. Radiosity: models **diffuse** reflection.
 
-> Both methods are computationally expensive and are rarely suiable for real-time rendering.
+> Both methods are **computationally expensive** and are rarely suiable for real-time rendering.
 
 [Unreal Engine](https://www.unrealengine.com/en-US)
 
 ## Ray tracing
 
+**Ray-tracing is relatively slow and can only be done in real time on very high-end machines. For every pixel in the rendered image a ray is cast from the object hit towards each light sources in turn to decide whether the source is occluded or not. This avoids the quality problems created by the shadow buffer, but it much more computationally expensive. The advantage is that it can take into account reflected and refracted light and so produces much more realistic lighting. Nevertheless the shadow edges are still typically hard.**
+
 Basic idea: Divide the screen into all pixels into the near clipping plane, and given a pixel, firing a ray from the camera through the pixel hitting the object, and fianlly assign the color for the pixel based on what color the ray is hitting on.
 
 Ray tracing is a different approach to rendering than the pipeline (In the `OpenGL` pipeline we model objects as meshes of polygons which we convert into fragments and then display or not). On the contrary, in ray tracing, we model objects as *implicit forms* and compute each pixel by casting a ray and seeing which models it intersects.
 
+#### Particle systems vs. Ray-tracing
+
+* A particle system represents the volume as a collection of moving particles. A volumetric system represents the volume as a grid of cells with varying density.
+* Particle systems are easier to implment in polygon-rendering systems like OpenGL as they can be represented simply as collections of quads or point sprites, which are generally supported with little extra coding. Grid based representations will require more specific ray-marching code to be written, On the other hand, grid-based representations are easier to implement in ray-tracing systems, where particles require lots of individual collections to be calculated.
+
 #### Projective Methods vs. Raytracing
 
 * Projective Methods:
+  * **Projective method maps the whole object into several fragments of the projection plane.**
+  * Multi-pixels - multi-fragments
   * For each **object** (might occupy multiple pixels): Find and update each pixel it influences
 * Ray Tracing:
+  * **Ray tracing maps each pixel of the object into a single fragment of the projection plane.**
+  * Single-pixel - single-fragment
   * For each **pixel**: Find each object that influences it and update accordingly
 
 ![](img/chrome_1.png)
+
+#### Similarity and differecne
 
 * They share lots of techniques:
   * Shading models
   * Calculation of intersections
 * They also have tons of differences:
   * Projection and hidden surface removal come for 'free' in ray tracing
+
+#### Ray tracing demonstration
 
 ![](img/chrome_2.png)
 
@@ -105,7 +122,7 @@ where,
 
 #### Rays
 
-The point P(x,y) of pixel (x,y) is given by:
+The vector composited of the point P(x,y) of pixel (x,y) is given by:
 
 $$ P(x,y) = E + i_c \textbf{i} + j_r \textbf{j} - n \textbf{k} $$
 
@@ -129,7 +146,7 @@ When:
 * $t>1$, point in the world
 * $t<0$, point behind the camera - not on the ray, $E - k, k \in P$
 
-#### Intersections
+## Intersections
 
 Now, to determine which the color the pixel shall be assigned to, we want to compute where this ray intersects with the objects in the scene.
 
@@ -143,25 +160,27 @@ $$ F(P) = 0 $$
 
 General idea is to substitutue the formula for the ray into $F$ and solve for $t$
 
-#### Intersecting a generic sphere
-
-For exmple, a unit sphere at the origin has implicit form:
+#### Intersecting a unit sphere at the origin
 
 $$ F(x,y,z) = x^2 + y^2 + z^2 - 1 = 0 \\[1ex]
 OR \\[1ex]
 F(P) = |P|^2 - 1 = 0 $$
 
+#### Intersecting a generic sphere
+
 $$ \begin{aligned}
 F(R(t)) &= 0 \\
 |R(t)|^2 - 1 &= 0 \\ 
 |\textbf{E} + \textbf{v}t|^2 -1 &= 0 \\
-|\textbf{v}|^2t^2 + 2(\textbf{E}\cdot \textbf{v})t + (|\textbf{E}^2-1) &= 0
+|\textbf{v}|^2t^2 + 2(\textbf{E}\cdot \textbf{v})t + (|\textbf{E|}^2-1) &= 0
 \end{aligned}
 $$
 
 As the equation is quadratic, it is possible to get zero, one or two solutions:
 
 ![](img/chrome_5.png)
+
+> **Graze does not account for the hit**
 
 #### Intersecting a generic plane
 
@@ -307,6 +326,8 @@ Transparency can also be applied reflexively, yeilding a tree of rays.
 
 ## Illumination
 
+**Illumination is then extended to include reflected and transmitted components**
+
 The illumination equation is extended to include reflected and transmitted components, which are computed recursively:
 
 $$ I(P) = I_{amb} + I_{dif} + I_{spe} + I(P_{ref}) + I(P_{tra}) $$
@@ -341,7 +362,7 @@ As, $0 < \theta < 90$. Hence, if
 
 ![](img/chrome_20.png)
 
-* In (c) and (d), the larger angle has become nearly 90 degree. The smaller angle is near the critical angle: when the smaller angle (of the slower medium) gets large enough, it forces the larger angle to 90 degree. A larger value is impossible, so no light is transmitted into the second medium. This is called **total internal reflection**. Noted: there is where reflection happens instead of refraction.
+* In (c) and (d), the larger angle has become nearly 90 degree. The smaller angle is near the critical angle: when the smaller angle (of the slower medium) gets large enough, it forces the larger angle to 90 degree. A larger value is impossible, so no light is transmitted into the second medium. This is called **total internal reflection**. Noted: this is where reflection happens instead of refraction.
 
 #### Wavelength contributes to refraction
 
@@ -361,9 +382,9 @@ Testing collisions for more complex shapes (such as meshes) can be very time con
 
 ## Optimisation - Extents
 
-> Extents are bounding boxes or spheres which enclose an object
+> **Extents are bounding boxes or spheres which enclose an object that optimises the performance of testing collisions.**
 
-Testing against a box or sphere is fast. If this test succeeds, then we proceed to test against the object. To keep the deviation as less as possible (minise false positive), we want tight fitting extents.
+**Reason**: Testing against a box or sphere is fast. If this test succeeds, then we proceed to test against the object. To keep the deviation as less as possible (minise false positive), we want tight fitting extents.
 
 #### Examples
 
@@ -375,6 +396,11 @@ Testing against a box or sphere is fast. If this test succeeds, then we proceed 
 * To compute a **sphere extent** we find the centroid of all the vertices by averaging their coordinates, This is the centre of the sphere. the radius is the distance to the vertex farthest from this point
 
 #### Projection extents
+
+> Few concepts:
+> * Screen Space: The space defined by the screen.
+> * World Space: The space in which your objects live.
+> * The camera maps the world space into screen space.
 
 Alternatively, we can build extents in screen space rather than world space.
 
@@ -432,7 +458,7 @@ Milk is a substance that has this property as well as skin, leaves and wax. Typi
 
 Basic recursive raytracing cannot do:
 
-* Light bouncing off a shiny surface like a mirror and illuminating a diffuse surface
+* Light bouncing off a shiny surface like a mirror and illuminating a diffuse surface (infinite loop)
 * Light bouncing off one diffuse surface to illuminate others
 * Light transimitting then diffusing internally
 
@@ -498,59 +524,78 @@ We end up with (N+1) samples:
 $$ \begin{aligned}
     P_i &= R(t_{hit} + i \Delta t) \\[2ex]
     C_i &= C(P_i) \\[2ex]
-    \alpha_i &= \alpha(P_i) \\[2ex]
+    \alpha_{i} &= \alpha(P_i) \\[2ex]
     C_N &= (r,g,b)_{background} \\[2ex]
-    \alpha_N &= 1
+    \alpha_{N} &= 1
 \end{aligned} $$
 
-#### Alpha compositing
+#### Alpha compositing (Back-to-front)
 
 We now combine these values into a single color by applying the alpha-blending equation.
 
 $$ \begin{aligned}
     C_N^N &= C_N \\[2ex]
-    C_N^i &= \alpha_i C_i + (1 - \alpha_i) C_N^{i+1}
+    C_N^i &= \alpha_{i} C_i + (1 - \alpha_{i}) C_N^{i+1}
 \end{aligned} $$
 
 where, 
 
 * $C_N^i$ is the total color at $i$
-* $\alpha_i C_i$ is the local color at $i$
+* $\alpha_{i} C_i$ is the local color at $i$
 * $C_N^{i+1}$ is the total color at $i+1$
 
 We can write a closed formula for the color from `a` to `b` as:
 
-$$ C_b^a = \sum_{i=a}^b \alpha_i C_i \prod_{j=a}^{i-1} (1 - \alpha_j) $$
+$$ C_b^a = \sum_{i=a}^b \alpha_{i} C_i \prod_{j=a}^{i-1} (1 - \alpha_{j}) $$
 
----
+#### Front-to-back Alpha Compositing
 
-#### Exercise
-
-Suppose we have a background color of (0,1,0) and a volume with the uniform color of (1,0.5,0.5). A ray cast through that volume takes two samples. The first has an alpha value of 0.2 and the seond 0.1. What is the color of the resulting pixel?
-
-Recall the previous graph from **Sampling**, the ray is passing through the volume from the camera to the background.
-
-![](img/chrome_28.png)
-
-$$
-\text{Background Color}\ C_N = (0,1,0) \\[2ex]
-\text{Uniform Color of Volume}\ C_i = (1,0.5,0.5) \\[2ex]
-
-\alpha_0 = 0.2 \\[2ex]
-\alpha_1 = 0.1 \\[2ex]
-
-C_2^2 = (0,1,0) \\[2ex]
-C_2^1 = \alpha_1 C_i + (1-\alpha_1)C_2^2 \\[2ex]
-
-C_2^0 = \alpha_0 C_i + (1-\alpha_2)C_2^1
-$$
-
----
-
-We can compute this function from front to back, stopping early if the transparency term gets small enough that nothing more can be seen.
+Additionally, we also can compute this function from **front to back**, stopping early if the transparency term gets **small enough** that nothing more can be seen.
 
 #### Implementation in `OpenGL`
 
 Volumetric ray tracing (AKA. ray casting) does not require a full ray tracing engine. It can be implemented in `OpenGl` as a fragment shader applied to a cube with a 3D texture.
 
 [Clouds tutorial](https://www.shadertoy.com/view/XslGRr)
+
+## Exercise
+
+1. How does milk look different to white paint?
+
+    Both are opaque and essentially pure white. But milk is an example of scattering.
+
+2. Suppose we have a background color of (0,1,0) and a volume with the uniform color of (1,0.5,0.5). A ray cast through that volume takes two samples. The first has an alpha value of 0.2 and the seond 0.1. What is the color of the resulting pixel?
+
+    Recall the previous graph from **Sampling**, the ray is passing through the volume from the camera to the background.
+
+    ![](img/chrome_28.png)
+
+    $$ \text{Background Color}\ C_N = (0,1,0) \\[2ex]
+    \text{Uniform Color of Volume}\ C_i = (1,0.5,0.5) \\[2ex]
+
+    \alpha_{0} = 0.2 \\[2ex]
+    \alpha_{1} = 0.1 \\[2ex]
+
+    C_2^2 = (0,1,0) \\[2ex]
+    C_2^1 = \alpha_{1} C_i + (1-\alpha_{1})C_2^2 \\[2ex]
+
+    C_2^0 = \alpha_{0} C_i + (1-\alpha_{2})C_2^1 $$
+
+3. What are some issues that may arise when implementing blending in OpenGL? What are some ways these issues can be overcome?
+
+    Solutions:
+        1. Draw all opaque objects first
+        2. Sort all transparent objects.
+        3. Draw all transparent objects in the sorted order.
+
+4. What are BSP trees? Give one application for which they can be used? What problem do they solve in that application?
+
+    BSP trees are data structures that are used to partition objects within a space. One area where they can be used is for ray tracing. When used in ray tracing, they allow us to avoid testing for ray-intersection with evry object in the scene. By dividing the scene up, we are able to only test against the objects in the subspaces that the ray travels through.
+
+5. What kind of modelling techniques would you use to model the shape and surface of a shiny metal teapot for a real-time game?
+
+    The shape of the teapot could be modelled using Bezier patches. Alternatively, the base and lid could be modeled as surfaces of revolution. The spout could possibly be modelled using extrusion. Assumeing we want the teapot to be a metalic surface we would model it as being highly specular. We could possibly use environment mapping to get reflections on the teapot. Since we are modelling this for a real-time game, we probably would not use ray-tracing techniques that would make the teapot look more realistic, we would be concerned about efficiency.
+
+6. What techniques would you apply for rendering a scene with soft shadows and realistic diffuse lighting?
+
+    The technique should be applied here is one of the global illumination approach - radisoity. The advantages of the approach is that it models indirect diffuse ligthing and as a result can render soft shadows and realistic diffuse lighting. The disadvantages of radiosity is that it does not handle translucent, transparent or specular surfaces in the calculations. It is calculation intensive and too slow for real-time applications. It can be used in real-time applications to pre-compute lighting for portions of geometry that are static and rendered offline into textures. However, pre-computed lighting is not suitable for dynamic lights or moving objects.

@@ -1,0 +1,773 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js">
+<link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+<link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+<link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+
+</head><body class="markdown-body">
+<h1 id="week-6a-textures-1" data-line="0" class="code-line">Week 6A Textures</h1>
+<h2 id="debugging-meshes-in-opengl-1" data-line="2" class="code-line">Debugging Meshes in OpenGL</h2>
+<ul>
+<li data-line="4" class="code-line">
+<p data-line="4" class="code-line">Draw only the outline (i.e., without fill)</p>
+<pre><code data-line="6" class="code-line"><code><div>glPolygonMode(GL.GL_FRONT_AND_BACK, GL3.GL_LINE);
+</div></code></code></pre>
+</li>
+<li data-line="10" class="code-line">
+<p data-line="10" class="code-line">Turn off backface culling to see the full mesh</p>
+<pre><code data-line="12" class="code-line"><code><div>gl.glDisable(GL.GL_CULL_FACE);
+</div></code></code></pre>
+</li>
+<li data-line="16" class="code-line">
+<p data-line="16" class="code-line">Lighting problems might due to:</p>
+<ul>
+<li data-line="17" class="code-line">Normal calculation</li>
+<li data-line="18" class="code-line">vertex position in Shader</li>
+</ul>
+</li>
+</ul>
+<h2 id="texturing-1" data-line="20" class="code-line">Texturing</h2>
+<ul>
+<li data-line="22" class="code-line">
+<p data-line="22" class="code-line">Texturing are a way to add detail to our models without requiring to many polygons</p>
+</li>
+<li data-line="23" class="code-line">
+<p data-line="23" class="code-line">Textures are used to add:</p>
+<ul>
+<li data-line="24" class="code-line">Color</li>
+<li data-line="25" class="code-line">Reflections</li>
+<li data-line="26" class="code-line">Shadows</li>
+<li data-line="27" class="code-line">Bumps</li>
+<li data-line="28" class="code-line">Lighting effects</li>
+<li data-line="29" class="code-line">etc</li>
+</ul>
+</li>
+<li data-line="30" class="code-line">
+<p data-line="30" class="code-line">A texture is basically a function that maps texture coordinates to pixel values.</p>
+<section><eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>T</mi><mo>(</mo><mi>s</mi><mo separator="true">,</mo><mi>t</mi><mo>)</mo><mo>=</mo><mrow><mo fence="true">(</mo><mtable><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mi>r</mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mi>g</mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mi>b</mi></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mi>a</mi></mstyle></mtd></mtr></mtable><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex"> T(s,t) = \begin{pmatrix}
+    r \\ g \\ b \\ a
+    \end{pmatrix}
+    </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">T</span><span class="mopen">(</span><span class="mord mathdefault">s</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:4.80006em;vertical-align:-2.15003em;"></span><span class="minner"><span class="mopen"><span class="delimsizing mult"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.6500299999999997em;"><span style="top:-1.6499900000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎝</span></span></span><span style="top:-2.805em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎜</span></span></span><span style="top:-3.4050100000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎜</span></span></span><span style="top:-4.65003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎛</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.15003em;"><span></span></span></span></span></span></span><span class="mord"><span class="mtable"><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.6500000000000004em;"><span style="top:-4.8100000000000005em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">r</span></span></span><span style="top:-3.61em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">g</span></span></span><span style="top:-2.4099999999999997em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault">b</span></span></span><span style="top:-1.2099999999999997em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.1500000000000004em;"><span></span></span></span></span></span></span></span><span class="mclose"><span class="delimsizing mult"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.6500299999999997em;"><span style="top:-1.6499900000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎠</span></span></span><span style="top:-2.805em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎟</span></span></span><span style="top:-3.4050100000000003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎟</span></span></span><span style="top:-4.65003em;"><span class="pstrut" style="height:3.1550000000000002em;"></span><span class="delimsizinginner delim-size4"><span>⎞</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:2.15003em;"><span></span></span></span></span></span></span></span></span></span></span></span></eqn></section><ul>
+<li data-line="37" class="code-line">where the left-hand side starts with <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">T</span></span></span></span></eq> is texture coordinates (i.e., texture value at (s,t)) while the right-hand side is the pixel value</li>
+</ul>
+</li>
+<li data-line="39" class="code-line">
+<p data-line="39" class="code-line">Texture coordinates are usually in ranger (0,1).</p>
+</li>
+<li data-line="41" class="code-line">
+<p data-line="41" class="code-line">Textures are most commonly represented by bitmaps (2D image files)</p>
+</li>
+</ul>
+<p data-line="43" class="code-line"><img src="/d:/OneDrive/9415/notes/week6/img/chrome_amU399IXb8.png" alt="" class="loading" id="image-hash-05ca1cf4460f2b95f813afc9dbb2b3d44a2ae9862a206340659aeedfcd9333b2"></p>
+<h4 id="procedural-textures-1" data-line="45" class="code-line">Procedural textures</h4>
+<ul>
+<li data-line="47" class="code-line">It is also possible to write code to compute the texture value at a point.</li>
+<li data-line="48" class="code-line">This can be good to generate materials like marbe or woodgrain.</li>
+</ul>
+<h2 id="using-textures-in-opengl-1" data-line="50" class="code-line">Using Textures in OpenGL</h2>
+<p data-line="52" class="code-line"><strong>Three main procedures for using textures in OpenGL.</strong></p>
+<ol>
+<li data-line="54" class="code-line">Loading or creating textures</li>
+<li data-line="55" class="code-line">Passing the texture to a shader</li>
+<li data-line="56" class="code-line">Mapping texture co-ordinates to vertices</li>
+</ol>
+<h4 id="loading-textures-1" data-line="58" class="code-line">Loading textures</h4>
+<ul>
+<li data-line="60" class="code-line">Similar yo vertex buffers, we have to create buffers on the GPU and copy into them.</li>
+</ul>
+<pre><code data-line="62" class="code-line language-java"><div><span class="hljs-comment">// Setting data to current texture</span>
+gl.glTexImage2D(
+    GL.GL_TEXTURE_2D,
+    <span class="hljs-number">0</span>,  <span class="hljs-comment">// level of detail: 0 = base</span>
+    data.getInternalFormat(),
+    data.getWidth(),
+    data.getHeight(),
+    <span class="hljs-number">0</span>,  <span class="hljs-comment">// border (must be 0)</span>
+    data.getPixelFormat(),
+    data.getPixelType(),
+    data.getBuffer()
+);
+</div></code></pre>
+<h4 id="texture-mapping-1" data-line="77" class="code-line">Texture mapping</h4>
+<ul>
+<li data-line="79" class="code-line">
+<p data-line="79" class="code-line">To add textures to surfaces in on our model, we set texture coordinates for each vertex.</p>
+</li>
+<li data-line="81" class="code-line">
+<p data-line="81" class="code-line">2D:
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_riKxdPLACD.png" alt="" class="loading" id="image-hash-ca8644346481029c4d5f16350ff75c522c36c9dd9c29419270408d1de91d1f60"></p>
+</li>
+<li data-line="83" class="code-line">
+<p data-line="83" class="code-line">3D:
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_33AEFyab71.png" alt="" class="loading" id="image-hash-0619e653f339c3696e78320d8b66fbd5e2fb6eb0ec57ec82b8609a5f28fb5044"></p>
+</li>
+</ul>
+<h4 id="texture-wrap-1" data-line="86" class="code-line">Texture Wrap</h4>
+<ul>
+<li data-line="88" class="code-line">
+<p data-line="88" class="code-line">You can assign texture coordinates outside the ranger [0,1] and set the texture wrap to</p>
+</li>
+<li data-line="90" class="code-line">
+<p data-line="90" class="code-line"><code>GL.GL_REPEAT (default)</code></p>
+</li>
+<li data-line="91" class="code-line">
+<p data-line="91" class="code-line"><code>GL.GL_MIRRORED_REPEAT</code></p>
+</li>
+<li data-line="92" class="code-line">
+<p data-line="92" class="code-line"><code>GL.GL_CLAMP_TO_EDGE</code></p>
+</li>
+<li data-line="93" class="code-line">
+<p data-line="93" class="code-line"><code>GL.GL_CLAMP_TO_BORDER (disable repeat effect)</code></p>
+</li>
+<li data-line="95" class="code-line">
+<pre><code data-line="95" class="code-line language-java"><div>  <span class="hljs-comment">// </span>
+  GL.GL_CLAMP_TO_BOARDER
+  <span class="hljs-comment">// The boarder color is originally set to black by default.</span>
+  GL.GL_BOARDER_COLOR
+</div></code></pre>
+</li>
+</ul>
+<pre><code data-line="103" class="code-line language-java"><div><span class="hljs-comment">// Mapping for multiple dimensions</span>
+
+<span class="hljs-comment">// Repeat mapping in s dimension</span>
+gl.glTexParameteri(
+    GL.GL_TEXTURE_2D,
+    GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT
+);
+
+<span class="hljs-comment">// Repeat mapping in s dimension</span>
+gl.glTexParameteri(
+    GL.GL_TEXTURE_2D,
+    GL.GL_TEXTURE_WRAP_T,
+    GL.GL_REPEAT
+)
+</div></code></pre>
+<h4 id="repeating-a-texture-1" data-line="120" class="code-line">Repeating a Texture</h4>
+<p data-line="122" class="code-line">If <code>GL_REPEAT</code> is set, the use of texture coordinates outside [0,1] are going to next to the initial texture, like</p>
+<p data-line="124" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/figure1.png" alt="" class="loading" id="image-hash-0f4a1b708d766b0cffb5b43462aa6dae1c65752c0cd82267e37b8c3ea33895b0"></p>
+<h4 id="binding-the-texture-1" data-line="126" class="code-line">Binding the texture</h4>
+<p data-line="128" class="code-line">OpenGL supports <strong>up to 32</strong> simultaneously &quot;active&quot; textures, defined by constants <code>GL_TEXTURE0</code> up to <code>GL_TEXTURE31</code>. These values are distinct from a texture id</p>
+<p data-line="130" class="code-line">In the fragment shader, tex is defined as <code>uniform sampler2D tex;</code>, while passed by callee with</p>
+<pre><code data-line="132" class="code-line language-java"><div>Shader.setInt(gl, <span class="hljs-string">"tex"</span>, <span class="hljs-number">0</span>);
+gl.glActiveTexture(GL.GL_TEXTURE0);
+gl.glBindTexture(GL.GL_TEXTURE2D, texId);
+</div></code></pre>
+<p data-line="138" class="code-line">To be concluded by a pipeline: sampler2D in fragment shader --(assigned)--&gt; Active texture number --(associated)--&gt; Texture ID</p>
+<h2 id="textures-and-shading-1" data-line="140" class="code-line">Textures and shading</h2>
+<p data-line="142" class="code-line">One <strong>simple</strong> approach is to wrap up the illumination models with texture enabled (i.e., replace illumination calculations with a texture look-up)</p>
+<section><eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi><mo>(</mo><mi>P</mi><mo>)</mo><mo>=</mo><mi>T</mi><mo>(</mo><mi>s</mi><mo>(</mo><mi>P</mi><mo>)</mo><mo separator="true">,</mo><mi>t</mi><mo>(</mo><mi>P</mi><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex"> I(P) = T(s(P),t(P)) </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">T</span><span class="mopen">(</span><span class="mord mathdefault">s</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">t</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mclose">)</span><span class="mclose">)</span></span></span></span></span></eqn></section><p data-line="146" class="code-line">that produces objects which are not affected by lights or color.</p>
+<p data-line="148" class="code-line">The <strong>common solution</strong> is to use the texture to modulate the <strong>ambient and diffuse</strong> reflection coefficients:</p>
+<section><eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi><mo>(</mo><mi>P</mi><mo>)</mo><mo>=</mo><mi>T</mi><mo>(</mo><mi>s</mi><mo separator="true">,</mo><mi>t</mi><mo>)</mo><mo>∗</mo><mo>[</mo><msub><mi>I</mi><mi>α</mi></msub><msub><mi>ρ</mi><mi>α</mi></msub><mo>+</mo><msub><mi>I</mi><mi>d</mi></msub><msub><mi>ρ</mi><mi>d</mi></msub><mo>(</mo><mover accent="true"><mtext mathvariant="bold">s</mtext><mo>^</mo></mover><mo>⋅</mo><mover accent="true"><mtext mathvariant="bold">m</mtext><mo>^</mo></mover><mo>)</mo><mo>]</mo><mo>+</mo><msub><mi>I</mi><mi>s</mi></msub><msub><mi>ρ</mi><mi>s</mi></msub><mo>(</mo><mover accent="true"><mtext mathvariant="bold">r</mtext><mo>^</mo></mover><mo>⋅</mo><mover accent="true"><mtext mathvariant="bold">v</mtext><mo>^</mo></mover><msup><mo>)</mo><mi>f</mi></msup></mrow><annotation encoding="application/x-tex"> I(P) = T(s,t)*[I_{\alpha}\rho_{\alpha}+I_d\rho_d (\hat{\textbf{s}} \cdot \hat{\textbf{m}})] + I_s\rho_s(\hat{\textbf{r}} \cdot \hat{\textbf{v}})^f </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">T</span><span class="mopen">(</span><span class="mord mathdefault">s</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.0037em;">α</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathdefault">ρ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.0037em;">α</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathdefault">ρ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.70788em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord textbf">s</span></span></span></span><span style="top:-3.01344em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.25em;">^</span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.70788em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord textbf">m</span></span></span></span><span style="top:-3.01344em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.25em;">^</span></span></span></span></span></span><span class="mclose">)</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.07847em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathdefault">ρ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.70788em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord textbf">r</span></span></span></span><span style="top:-3.01344em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.25em;">^</span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.149108em;vertical-align:-0.25em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.70788em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord textbf">v</span></span></span></span><span style="top:-3.01344em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.25em;">^</span></span></span></span></span></span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999999em;"><span style="top:-3.1130000000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span></span></span></span></span></span></span></span></span></span></span></span></eqn></section><p data-line="152" class="code-line">Usually leave the specular term unaffected because it is unusual for the material color to affect specular reflections.</p>
+<h4 id="foreshortening-1" data-line="154" class="code-line">Foreshortening</h4>
+<p data-line="156" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_1.png" alt="" class="loading" id="image-hash-d9367a386bba61ba6f486b45fc4e8ccd7c80db1ed464004bcae8b4fe53560a34"></p>
+<blockquote data-line="158" class="code-line">
+<p data-line="158" class="code-line">Standard bilinear interpolation does not work because it fails to take into account <em><strong>foreshortening in tilted polygons</strong></em>, as linear inteprolation perserves the false integrity of original texture, demonstrated below.</p>
+<p data-line="160" class="code-line">Foreshortening is the visual effect or optical illusion that causes an object or distance to appear shorten than it actually is because it is angled toward the viewer.</p>
+<p data-line="162" class="code-line">Additionally, an object is often not scaled evenly: a circle often appears as an ellipse and a square can appear as a trapezoid.</p>
+</blockquote>
+<h4 id="rendering-the-texture-1" data-line="165" class="code-line">Rendering the Texture</h4>
+<blockquote data-line="167" class="code-line">
+<p data-line="167" class="code-line">Linear vs. correct interpolation example:</p>
+</blockquote>
+<p data-line="169" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_2.png" alt="" class="loading" id="image-hash-aa5bd2ef45f94f9da2f8510d0e833036a715aaf854f9517de8cc64979f3769ed"></p>
+<h4 id="hyperbolic-interpolation-not-examible-1" data-line="171" class="code-line">Hyperbolic interpolation (NOT EXAMIBLE)</h4>
+<p data-line="173" class="code-line">While we want texture coordinates to interpolate linearly in world space, the perspective projection distorts the depth coordinate so that linear interpolation in <em>screen space</em> <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">≠</mi></mrow><annotation encoding="application/x-tex">\ne</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mrel"><span class="mrel"><span class="mord"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="rlap"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="inner"><span class="mrel latin_fallback"≯</span></span><span class="fix"></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"><span></span></span></span></span></span></span><span class="mrel">=</span></span></span></span></span></eq> linear interpolation in <em>world space</em>. And hyperbolic interpolation does fix it.</p>
+<p data-line="175" class="code-line"><a href="http://web.cs.ucdavis.edu/~amenta/s12/perspectiveCorrect.pdf">More about Hyperbolic interpolation</a></p>
+<h2 id="3d-textures-1" data-line="177" class="code-line">3D textures</h2>
+<p data-line="179" class="code-line">3D textures are made by adding an extra texture coordiante, instead of simple repeat in each face. <strong>This, of course, eliminates weird seams and distortions when a 2D texture is wrapper on a curve 3D surface.</strong></p>
+<h2 id="magnification-1" data-line="181" class="code-line">Magnification</h2>
+<p data-line="183" class="code-line">Normal bitmap texture have finite detail (i.e., if we zoom in close we can see individual texture pixels). If the camera is close enough to a textured polygon multiple screen pixels may map to the same texture pixels, resulting in <em>pixelated</em> effects.</p>
+<blockquote data-line="185" class="code-line">
+<p data-line="185" class="code-line">Displaying a bitmap or a section of a bitmap at such a large size taht individual pixels, small singel-colored square display elements that comprise the bitmap, are visible. Such an image is said to be pixelated.</p>
+<p data-line="187" class="code-line">Or in plain English, the iamge looks smooth when zoomed out, but when a small section is viewed more closely, the eye cam distinguished individual pixels.</p>
+</blockquote>
+<p data-line="189" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_3.png" alt="" class="loading" id="image-hash-354b85d077ef05ed2cc6c899d3ca4b6b31fd92f9fb0b6415752d274eb4f638b4"></p>
+<h4 id="solution-1---nearest-texel-1" data-line="191" class="code-line">Solution 1 - Nearest Texel</h4>
+<p data-line="193" class="code-line">The alignment is probably not exact. The way to solve this is to find the nearest texel for that pixel.</p>
+<p data-line="195" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_5.png" alt="" class="loading" id="image-hash-6a3fe81aee57f9f308511a8686e725da9b18950aab94c015d70521e9041203ee"></p>
+<h4 id="solution-2---bilinear-filtering-1" data-line="197" class="code-line">Solution 2 - Bilinear Filtering</h4>
+<p data-line="199" class="code-line">The basic idea is to find the nearest four <strong>texels</strong> (not pixels) around the pixel and use bilinear interpoaltion over them.</p>
+<p data-line="201" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_6.png" alt="" class="loading" id="image-hash-5f4cd1cfcb631314472ce385f5e3a97904908954da7df0a8437f00a7269ea536"></p>
+<p data-line="203" class="code-line">No filtering vs. Filtering. Filtering clearly does the better job.</p>
+<p data-line="205" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_7.png" alt="" class="loading" id="image-hash-85d8a5d935a98f87a260dadc0e2dfdeb1eb43e898a0a8bf906e718be4d0981f4"></p>
+<h4 id="magnification-filtering-in-opengl-1" data-line="207" class="code-line">Magnification filtering in OpenGL</h4>
+<pre><code data-line="209" class="code-line language-java"><div><span class="hljs-comment">// Bilinear filtering - solution 2</span>
+gl.glTexParameteri(GL.GL_TEXTURE_2D,
+        GL.GL_TEXTURE_MAG_FILTER,
+        GL.GL_LINEAR);
+        
+<span class="hljs-comment">// No bilinear filtering - solution 1</span>
+gl.glTexPararmeteri(GL.GL_TEXTURE_2D,
+        GL.GL_TEXTURE_MAG_FILTER,
+        GL.GL_NEAREST);
+</div></code></pre>
+<h2 id="minification-1" data-line="221" class="code-line">Minification</h2>
+<p data-line="223" class="code-line">Minificaition, on the other hand, occurs when we zoom out too far from a texture, where we can have more than one texel mapping to a pixel. If image pixels line up with regularities in the texture, strange artefacts appear in the ouput such as moire patterns or shimmering in an animation.</p>
+<p data-line="225" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_8.png" alt="" class="loading" id="image-hash-0423c603fdfeb50ca1889002a78c10abd4a9735f21f11e4963de8a4b15ec598d"></p>
+<p data-line="227" class="code-line">Compared to the <strong>Magnification</strong>, <strong>Minification</strong> indicates that there might be more than one texel mapping to a pixel, while <strong>Maginication</strong> indicates there might be one texel mapping to more than one pixel.</p>
+<p data-line="229" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_9.png" alt="" class="loading" id="image-hash-b8014beab811e436c21d8b8cfd0a8061d13fc87500fcc6369ae144a1a17e2a19"></p>
+<h2 id="aliasing---an-example-of-minification-1" data-line="231" class="code-line">Aliasing - an example of minification</h2>
+<p data-line="233" class="code-line"><strong>The problem is that one screen pixel overlaps multiple texels but taking its value from only one of those texels.</strong></p>
+<p data-line="235" class="code-line">Aliasing occurs when samples are taken from an image at a lower resolution than repeating detail in the image. Aliasing is an effet that causes different signals to become indistinguishable when sampled.</p>
+<p data-line="237" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_11.png" alt="" class="loading" id="image-hash-d7b029182535f05d612b37ce18651b9016005cdf99cc15f60256246fb4112e73">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_12.png" alt="" class="loading" id="image-hash-b0a2d8f22717bb55ae1c123e0ad4ebbfdd5e38c70d4ac3e5dafcb1412d5f1f9c"></p>
+<h4 id="example-of-spatial-aliasing-in-the-form-of-a-moire-pattern-1" data-line="240" class="code-line">Example of Spatial aliasing in the form of a moire pattern</h4>
+<p data-line="242" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_10.png" alt="" class="loading" id="image-hash-244dc27782575a679f92d401f72acfb04cdd217045ed9a9fdd04e1d7f121aa72"></p>
+<h4 id="solution-2" data-line="244" class="code-line">Solution</h4>
+<p data-line="246" class="code-line">Aliasing is generally avoided by applying <em>lowe pass filters</em> or <em>anti-aliasing</em> to the input signal before sampling. Suitable <em>reconstruction filters</em> should then be used when restoring the sampled signal to the continuous domain.</p>
+<h2 id="filtering-1" data-line="248" class="code-line">Filtering</h2>
+<p data-line="250" class="code-line">The problem is that one screen pixel overlaps multiple texels but is taking its value from only one of those texels.</p>
+<h4 id="solution-3" data-line="252" class="code-line">Solution</h4>
+<p data-line="254" class="code-line">A better appraoch is to <strong>average the texels that contribute to that pixel. However, doing this on the fly is expensive</strong>.</p>
+<h4 id="minification-filtering-1" data-line="256" class="code-line">Minification Filtering</h4>
+<pre><code data-line="258" class="code-line language-java"><div><span class="hljs-comment">// Bilinear filtering</span>
+gl.glTexPararmeteri(
+    GL.GL_TEXTURE_2D,
+    GL.GL_TEXTURE_MIN_FILTER,
+    GL.GL_LINEAR
+);
+
+<span class="hljs-comment">// No bilineasr filtering</span>
+gl.glTexParameteri(
+    GL.GL_TEXTURE_2D.
+    GL.GL_TEXTURE_MIN_FILTER,
+    GL.GL_NEAREST
+);
+</div></code></pre>
+<h2 id="mip-mapping-1" data-line="274" class="code-line">MIP mapping</h2>
+<p data-line="276" class="code-line">Mipmaps are precomputed low-resolution versions of a texture. Starting with a slightly lower resolution texture we compute and store 256 <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">×</span></span></span></span></eq> 256, 128, 64, 32, 16, 8, 4, 2, 1.</p>
+<p data-line="278" class="code-line">This takes total <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mfrac><mn>4</mn><mn>3</mn></mfrac></mrow><annotation encoding="application/x-tex">\frac{4}{3}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.190108em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.845108em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">3</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">4</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></eq> memory of the original.</p>
+<h4 id="generating-mip-maps-1" data-line="281" class="code-line">Generating Mip-Maps</h4>
+<pre><code data-line="283" class="code-line language-java"><div><span class="hljs-comment">// Get opengl to auto-generate</span>
+<span class="hljs-comment">// Mip-maps</span>
+gl.glGenerateMipmap(GL.GL_TEXTURE_2D);
+</div></code></pre>
+<h4 id="using-mipmaps-1" data-line="289" class="code-line">Using mipmaps</h4>
+<p data-line="291" class="code-line">The simplest approach is to use the <strong>NEXT SMALLEST MIPMAP</strong> for the required resolution.</p>
+<blockquote data-line="293" class="code-line">
+<p data-line="293" class="code-line">To render a 40 <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">×</span></span></span></span></eq> 40 pixel image, use the 32 <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">×</span></span></span></span></eq> 32 pixel mipmap and magnify using magnification filter.</p>
+<p data-line="295" class="code-line"><strong>DO NOT forget to magification filter the texture of resulting Mipmap</strong></p>
+</blockquote>
+<h4 id="mipmap-minification-filtering-2" data-line="297" class="code-line">MipMap Minification Filtering</h4>
+<pre><code data-line="299" class="code-line language-java"><div><span class="hljs-comment">// Use nearest mipmap</span>
+gl.glTexParameteri(
+    GL.GL_TEXTURE_2D,
+    GL.GL_TEXTURE_MIN_FILTER,
+    GL.GL_NEAREST_MIPMAP_NEAREST
+);
+</div></code></pre>
+<h4 id="trilinear-filtering-1" data-line="309" class="code-line">Trilinear filtering</h4>
+<p data-line="311" class="code-line">A more costly approach is trilinear filtering by finding the two of the nearest MipMaps and do the linear interpolation on both of them.</p>
+<ol>
+<li data-line="313" class="code-line">Use bilinear filtering to compute pixel values based on the next highest and the next lowest mipmap resolutions</li>
+<li data-line="314" class="code-line">Interpolate between these values depending on the desired resolution.</li>
+</ol>
+<h4 id="mipmap-minification-filtering-3" data-line="317" class="code-line">MipMap Minification Filtering</h4>
+<pre><code data-line="319" class="code-line language-java"><div><span class="hljs-comment">// Use trilinear filtering</span>
+gl.glTexParameteri(
+    GL.GL_TEXTURE_2D,
+    GL.GL_TEXTURE_MIN_FILTER,
+    GL.GL_LINEAR_MIPMAP_LINEAR
+);
+</div></code></pre>
+<h4 id="aniso-filtering-1" data-line="328" class="code-line">Aniso Filtering</h4>
+<p data-line="330" class="code-line">If a polygon is on an oblique angle away from the camera, then minification may occur much more strongly in one dimension than the other.</p>
+<p data-line="332" class="code-line">Anisotropic filtering is filtering which treats the two axes independently.</p>
+<pre><code data-line="334" class="code-line language-java"><div><span class="hljs-keyword">float</span> fLargest[] = <span class="hljs-keyword">new</span> <span class="hljs-keyword">float</span>[<span class="hljs-number">1</span>];
+gl.glGetFloatv(GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, fLargest, <span class="hljs-number">0</span>);
+
+gl.glTexParameterf(
+    GL.GL_TEXTURE_2D,
+    GL.GL_TEXTURE_MAX_ANISOTROPY_EXT,
+    fLargest[<span class="hljs-number">0</span>]
+);
+</div></code></pre>
+<h4 id="aniso-filtering-vs-trilinear-filtering-1" data-line="345" class="code-line">Aniso Filtering vs. Trilinear Filtering</h4>
+<p data-line="347" class="code-line">Trilinear interpolation takes a much bigger sample instead of what it should be (normally, smaller than what it takes). Hence, the far plane (i.e, far end point seeing on an oblique angle away from the camera) will be bluery.</p>
+<p data-line="349" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_13.jpg" alt="" class="loading" id="image-hash-cfd9885933142e772abc7f27a7b2ea3fa7f2dedd3111c120d08aa6c1277ca302"></p>
+<h2 id="rip-mapping-1" data-line="351" class="code-line">RIP Mapping</h2>
+<p data-line="353" class="code-line">RIP mapping is an extension of MIP mapping which down-samples <strong>each axis</strong> and is a better approach to anisotropic filtering</p>
+<blockquote data-line="355" class="code-line">
+<p data-line="355" class="code-line">A 256 <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">×</span></span></span></span></eq> 256 iamge has copies at:</p>
+<blockquote data-line="356" class="code-line">
+<p data-line="356" class="code-line">256 <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">×</span></span></span></span></eq> 128, 256 <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">×</span></span></span></span></eq> 64, ...<br>
+128 <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">×</span></span></span></span></eq> 256, 128 <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">×</span></span></span></span></eq> 128, ...<br>
+64 <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">×</span></span></span></span></eq> 256, and etc (all permutations)</p>
+</blockquote>
+</blockquote>
+<h4 id="limitations-1" data-line="360" class="code-line">Limitations</h4>
+<ul>
+<li data-line="362" class="code-line">Does not handle diagonal anisotropy.</li>
+<li data-line="363" class="code-line">More memory required for RIP maps (4 times as much)</li>
+<li data-line="364" class="code-line">Not implemetned in OpenGL</li>
+</ul>
+<h2 id="multi-texturing-1" data-line="366" class="code-line">Multi-texturing</h2>
+<p data-line="368" class="code-line">Can use mroe than one texture on the same fragment.</p>
+<pre><code data-line="370" class="code-line language-java"><div>gl.glActiveTexture(GL.GL_TEXTURE0);
+gl.glBindTexture(GL.GL_TEXTURE_2D, texId1);
+
+gl.glActiveTexture(GL.GL_TEXTURE1);
+gl.glBindTexture(GL.GL_TEXTURE_2D, texId2);
+</div></code></pre>
+<p data-line="378" class="code-line">However, the above code (multi-texturing) have a pre-condition that has to pass two different textures to the shader, and hence two different sets of texture coordinates.</p>
+<h2 id="animiated-textures-1" data-line="380" class="code-line">Animiated textures</h2>
+<p data-line="382" class="code-line">Animated textures can be achieved by loading multiple textures and using a different one on each frame.</p>
+<p data-line="384" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_14.png" alt="" class="loading" id="image-hash-3584047b4ce9447966afe9a113f1b98dfadafbf12d25c2faa48aacdc24a2bc4c"></p>
+<p data-line="386" class="code-line"><br><br><br></p>
+<hr>
+<h1 id="week-6b-textures-2-and-rasterisation-1" data-line="390" class="code-line">Week 6B Textures 2 and Rasterisation</h1>
+<h2 id="rendering-to-a-texture-1" data-line="392" class="code-line">Rendering to a texture</h2>
+<p data-line="394" class="code-line"><strong>Idea of how a security camera implement</strong></p>
+<p data-line="396" class="code-line">A common trick is to set up a camera in a scene, render the scene into an offscreen buffer, then copy the image into a texture to use as part of another scene.</p>
+<blockquote data-line="398" class="code-line">
+<p data-line="398" class="code-line">E.g. Implementation a security camera in a game</p>
+</blockquote>
+<pre><code data-line="400" class="code-line language-java"><div>gl.glCopyTexImage2D(...);
+</div></code></pre>
+<h2 id="reflection-mapping-1" data-line="404" class="code-line">Reflection Mapping</h2>
+<p data-line="406" class="code-line">Doing this in general is expensive, but we can make a reasonable approximation with textures</p>
+<ol>
+<li data-line="408" class="code-line">Generate a cube that encloses the reflective object.</li>
+<li data-line="409" class="code-line">Place a camera at the centre of the cube and render the outside world onto the faces of the cube.</li>
+<li data-line="410" class="code-line">Use this image to texture the object.</li>
+</ol>
+<p data-line="412" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_15.png" alt="" class="loading" id="image-hash-88865982389471150ad6763b1b15e8ecde3db34ca2616c6a81aef5c313353b5c"></p>
+<p data-line="414" class="code-line">Do the mapping for the rest three faces for 2 dimensional application (supposing fovy is 90 degree here).
+However, if it is a 3 dimensional application, another two surfaces (top and bottom) also need to be taken into consideration (such as front, back, left, right, up and down).</p>
+<p data-line="417" class="code-line">To apply the reflection-mapped texture to the object we need to calculate appropriate texture coordinates. This can be done by tracing a ray from the camera, reflecting it off the object and then calculating where it intersects the cube.</p>
+<p data-line="419" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_16.png" alt="" class="loading" id="image-hash-8260740e1a60230fa1ceca45b4bc427ec241722e248eeb483a2e083968536f90"></p>
+<h4 id="pros-and-cons-4" data-line="421" class="code-line">Pros and Cons</h4>
+<ul>
+<li data-line="423" class="code-line">Pros: Produces reasonably convincing polished metal surfaces and mirrors.</li>
+<li data-line="424" class="code-line">Cons:
+<ul>
+<li data-line="425" class="code-line">Expensive: Requires 6 additional render passes (i.e., six faces in total) per object</li>
+<li data-line="426" class="code-line">Angles to near objects are wrong.</li>
+<li data-line="427" class="code-line">Does not handle self-reflections or recursive reflections</li>
+</ul>
+</li>
+</ul>
+<h4 id="examples-for-mapping-sky-boxes-1" data-line="429" class="code-line">Examples for mapping sky boxes</h4>
+<p data-line="431" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_17.png" alt="" class="loading" id="image-hash-cecdfc5f2b329527bb3f8ed78d588546cd79fa065eba5c68614facc0746518ee"></p>
+<blockquote data-line="433" class="code-line">
+<p data-line="433" class="code-line">OpenGL does also support sphere mapping, which produces more distortion and is not as effetive as cube mapping.</p>
+</blockquote>
+<h2 id="shadows-1" data-line="435" class="code-line">Shadows</h2>
+<p data-line="437" class="code-line"><strong>Shadow mapping is relatively fast and can usually be done in real time. It requires two extra rendering passes per light source, one to compute the shadow buffer and one to apply the shadows to the scene. The quality of the shadows is limited by the resolution of the shadow buffer. A higher resolution buffer gives better looking shadows but is more costly in terms of time and memory. Shadow edges are hard and appear jagged at low buffer resolutions.</strong></p>
+<p data-line="439" class="code-line">Out lighting model does not currently produce shadows, which requires taking whether the light source is occluded by another object into account.</p>
+<p data-line="441" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_18.png" alt="" class="loading" id="image-hash-55ffceef4a3f6c908c91a9a1dd5a87ab40ccd6cf339281ec0b0373bee377da19"></p>
+<h4 id="shadow-buffering-1" data-line="443" class="code-line">Shadow buffering</h4>
+<p data-line="445" class="code-line"><strong>One solution is to keep a shadow buffer for each light source.</strong></p>
+<blockquote data-line="447" class="code-line">
+<p data-line="447" class="code-line">The shadow buffer is like the depth buffer, it records the distance from the light source to teh cloest object in each direction.</p>
+</blockquote>
+<p data-line="449" class="code-line">Shadow rendering is usually done in multiple passes:</p>
+<ol>
+<li data-line="451" class="code-line">Render the scene from each light's viewpoint capturing only z-info in shadow (depth) buffer (color buffer turned off).</li>
+<li data-line="452" class="code-line">Render the scene from camera's point of view, using the previously captured shadow buffers to modulate the fragments.</li>
+</ol>
+<p data-line="454" class="code-line">When rendering a point P:</p>
+<ul>
+<li data-line="456" class="code-line">Project the point into the light's clip space.</li>
+<li data-line="457" class="code-line">Calculate the index (i,j) for P in the shadow buffers.</li>
+<li data-line="458" class="code-line">Calculate the pseudodepth <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault">d</span></span></span></span></eq> relative to the light source.</li>
+<li data-line="459" class="code-line">If shadow[i,j] &lt; <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault">d</span></span></span></span></eq> then P is in the shadow.</li>
+</ul>
+<blockquote data-line="461" class="code-line">
+<p data-line="461" class="code-line">Similar to the depth buffer, where it does require rendering from both of light's perspective and camera's perspective.</p>
+</blockquote>
+<h4 id="pros-and-cons-5" data-line="463" class="code-line">Pros and Cons</h4>
+<ul>
+<li data-line="465" class="code-line">
+<p data-line="465" class="code-line">Pro:</p>
+<ul>
+<li data-line="466" class="code-line">Provides realistic shadows</li>
+<li data-line="467" class="code-line">No knowledge or processing of the scene geometry is required</li>
+</ul>
+</li>
+<li data-line="468" class="code-line">
+<p data-line="468" class="code-line">Cons:</p>
+<ul>
+<li data-line="469" class="code-line">More computation</li>
+<li data-line="470" class="code-line">Shadow quality is limited by precision of shadow buffer. This may cause some aliasing artefacts, such as, perspective aliasing and projective aliasing. <a href="https://docs.microsoft.com/en-us/windows/win32/dxtecharts/common-techniques-to-improve-shadow-depth-maps">Referece</a></li>
+<li data-line="471" class="code-line">Shadow edges are hard. Nowadays, one main solution to solve this is when rendering, turning the reolsution really high.</li>
+<li data-line="472" class="code-line">The scene geometry must be rendered once per light in order to generate the shadow map for a spotlight, and more times for an omnidirectional point light.</li>
+</ul>
+<p data-line="474" class="code-line"><a href="http://www.paulsprojects.net/tutorials/smt/smt.html">Reading material</a></p>
+</li>
+</ul>
+<h2 id="light-mapping-1" data-line="476" class="code-line">Light Mapping</h2>
+<p data-line="478" class="code-line"><strong>Light mapping is wide used for the scenario when geometry models are static at low computational cost.</strong></p>
+<p data-line="480" class="code-line">If our light sources and large portions of the geometry are static then we can precompute the lighting equations and store the results in textures called light maps. Also called <em>baked lighting</em>.</p>
+<h4 id="pros-and-cons-6" data-line="482" class="code-line">Pros and Cons</h4>
+<ul>
+<li data-line="484" class="code-line">Pros: Sophisticated lighting effects can be computed at compile time, where speed is less of an issue.</li>
+<li data-line="485" class="code-line">Cons:
+<ul>
+<li data-line="486" class="code-line">Memory and loading times for many individual light maps.</li>
+<li data-line="487" class="code-line">Not suitable for dynamic lights or moving objects.</li>
+<li data-line="488" class="code-line">Potential aliasing effects depending on the resolution of the light maps.</li>
+</ul>
+</li>
+</ul>
+<h2 id="normal-mapping-1" data-line="490" class="code-line">Normal Mapping</h2>
+<p data-line="492" class="code-line"><strong>What normal mapping does is to render the fake lights for bumps and dents</strong>.</p>
+<p data-line="494" class="code-line">We made assumption that the surface of the polygon is smoothly curved when interpolating normals in a Phong Shader.</p>
+<blockquote data-line="496" class="code-line">
+<p data-line="496" class="code-line">What if the surface is actually rough with many small deformities?</p>
+</blockquote>
+<h4 id="optional-solution-1" data-line="498" class="code-line">Optional solution</h4>
+<p data-line="500" class="code-line">One solution would be to increase the number of polygons to represent all the deformities, but this is computationally unfeasible for most applications.</p>
+<h4 id="another-solution-from-the-lighting-1" data-line="502" class="code-line">Another solution from the Lighting</h4>
+<p data-line="504" class="code-line">Instead we use textures called normal maps to simulate minor perturbations in the surface normal.</p>
+<blockquote data-line="506" class="code-line">
+<p data-line="506" class="code-line">In 3D computer graphics, normal mapping is a technique used for fakign the lighting of bumps and dents - an implementation of bump mapping. It is used to add details without using more polygons.</p>
+</blockquote>
+<p data-line="508" class="code-line">Rather than arrays of colors, normal maps can be considered as arrays of vectors. These vectors are added to the interpolated normals to give the appearance of roughness.</p>
+<blockquote data-line="510" class="code-line">
+<p data-line="510" class="code-line">However, this does not reflect the reality of the shape of the meshes, but only the lighting effects. So, if we really approach the surface close (move across the z-axis), we won't seee any details for those deformities.</p>
+</blockquote>
+<p data-line="512" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_19.png" alt="" class="loading" id="image-hash-8440f70d6383bb64ea964488e325107a05d5bbcb79b7fa99fc853876f874010d">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_20.png" alt="" class="loading" id="image-hash-e0b4dc096a725a67605d027b445f6a521334ae6520291f8c195fa6a7fc2e577e"></p>
+<h4 id="pros-and-cons-7" data-line="515" class="code-line">Pros and Cons</h4>
+<ul>
+<li data-line="517" class="code-line">Pros: Provide the illusion of surface texture</li>
+<li data-line="518" class="code-line">Cons:
+<ul>
+<li data-line="519" class="code-line">Does not affect silhouette</li>
+<li data-line="520" class="code-line">Does not affect occlusion calculation</li>
+</ul>
+</li>
+</ul>
+<h4 id="advantages-and-disadvantages-of-normal-mapping-over-adding-extra-polygons-to-represent-detail-1" data-line="522" class="code-line">Advantages and disadvantages of normal mapping over adding extra polygons to represent detail</h4>
+<ul>
+<li data-line="524" class="code-line">Advantages: Every polygon we add to the scene creates extra computation at every step of the pipeline: transforming, illumination, clipping, rasterising, etc. Having a large number of polygons is therefore very computationally expensive. Normal mapping allows us to represent rough surfaces with far fewer polygons.</li>
+<li data-line="525" class="code-line">Costs: Extra work has to be done in the textureing stage. Normals must be computed for each pixel on the surface and the illumination equation recalculated to include data from the normal map. The map itself must be stored in memory, doubling the amount of texture memory required.</li>
+<li data-line="526" class="code-line">Disadvantages: One problem with using normal maps is that they do not affect the outline of the object. So if the surface is viewed on an angle, it will appear flat. Also normal mapping only works for minor perturbances in the surface. Larger bumps should occlude other parts of the surface when viewed at an angle. Normal maps do not support this occlusion.</li>
+</ul>
+<h4 id="example-4" data-line="528" class="code-line">Example</h4>
+<p data-line="530" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_21.png" alt="" class="loading" id="image-hash-751efa8a0ac7a9b256b7e25522dc0e79f6a1a9de11b7b7b55a5cdb1387cbc4d2"></p>
+<h2 id="rasterisation-1" data-line="532" class="code-line">Rasterisation</h2>
+<p data-line="534" class="code-line"><strong>Rasterisation</strong> is the process of converting lines and polygons represented by their vertices into fragments.</p>
+<p data-line="536" class="code-line"><strong>Fragments</strong> are like pixels but include color, depth, texture coordinate. They may also never make it to the screen due to hidden surface removal or culling.</p>
+<p data-line="538" class="code-line">Rasterisation needs to be accurate and efficient. Therefore, simple integer calculations are preferred (floating points cost computationally and create round errors).</p>
+<h4 id="problems-with-drawing-lines-in-slope-intercept-form-1" data-line="540" class="code-line">Problems with drawing lines in Slope-intercept Form</h4>
+<ol>
+<li data-line="542" class="code-line">Floating point math is slow and creates rounding errors.
+<ul>
+<li data-line="543" class="code-line">Floating point multiplcation, addition and round for each pixel.</li>
+</ul>
+</li>
+<li data-line="544" class="code-line">Code does not consider:
+<ul>
+<li data-line="545" class="code-line">Points are not connected if m &gt; 1</li>
+<li data-line="546" class="code-line">Divide by zero if x0 == x1 (vertical lines)
+<ul>
+<li data-line="547" class="code-line">Does not work for x0 &gt; x1</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<blockquote data-line="549" class="code-line">
+<p data-line="549" class="code-line">Even incremental (replaces multiplication) is still not good enough.</p>
+</blockquote>
+<h2 id="bresenhams-algorithm-1" data-line="551" class="code-line">Bresenham's algorithm</h2>
+<h4 id="assumption-1" data-line="553" class="code-line">Assumption</h4>
+<p data-line="555" class="code-line">The line is in the first octant (i.e., x1 &gt; x0, y1 &gt; y0 and m <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>≤</mo></mrow><annotation encoding="application/x-tex">\le</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7719400000000001em;vertical-align:-0.13597em;"></span><span class="mrel">≤</span></span></span></span></eq> 1, also means the y interception is zero)</p>
+<h4 id="idea-1" data-line="557" class="code-line">Idea</h4>
+<ul>
+<li data-line="559" class="code-line">For each x we work out which pixel we set next
+<ul>
+<li data-line="560" class="code-line">The next pixel with the same y value if the line passes below the midpoint between the two pixels</li>
+<li data-line="561" class="code-line">Or the next pixel with an increased y value if the line passes above the midpoint between the two pixels.</li>
+</ul>
+</li>
+</ul>
+<p data-line="563" class="code-line"><strong>Testing above/below</strong>:</p>
+<section><eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>)</mo><mo>=</mo><mn>2</mn><mi>h</mi><mo>(</mo><mi>x</mi><mo>−</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>−</mo><mn>2</mn><mi>w</mi><mo>(</mo><mi>y</mi><mo>−</mo><msub><mi>y</mi><mn>0</mn></msub><mo>)</mo></mrow><annotation encoding="application/x-tex"> F(x,y) = 2h(x-x_0) - 2w(y-y_0) </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathdefault">h</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></eqn></section><section><eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>)</mo><mo>&lt;</mo><mn>0</mn><mtext>&ThickSpace;</mtext><mo>⟹</mo><mtext>&ThickSpace;</mtext><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>)</mo><mtext> is above line</mtext></mrow><annotation encoding="application/x-tex"> F(x,y) &lt; 0 \implies (x,y) \text{ is above line} </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.66844em;vertical-align:-0.024em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">⟹</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mord text"><span class="mord"> is above line</span></span></span></span></span></span></eqn></section><section><eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>)</mo><mo>&gt;</mo><mn>0</mn><mtext>&ThickSpace;</mtext><mo>⟹</mo><mtext>&ThickSpace;</mtext><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>)</mo><mtext> is below line</mtext></mrow><annotation encoding="application/x-tex"> F(x,y) &gt; 0 \implies (x,y) \text{ is below line} </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.66844em;vertical-align:-0.024em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">⟹</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mord text"><span class="mord"> is below line</span></span></span></span></span></span></eqn></section><blockquote data-line="569" class="code-line">
+<p data-line="569" class="code-line">How does the <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>)</mo><mo>=</mo><mn>2</mn><mi>h</mi><mo>(</mo><mi>x</mi><mo>−</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>−</mo><mn>2</mn><mi>w</mi><mo>(</mo><mi>y</mi><mo>−</mo><msub><mi>y</mi><mn>0</mn></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">F(x,y) = 2h(x-x_0) - 2w(y-y_0)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathdefault">h</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></eq> come from?</p>
+<p data-line="571" class="code-line">To remove the floating number out of the original equation, which is <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>0</mn><mo>=</mo><mi>m</mi><mo>(</mo><mi>x</mi><mo>−</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>−</mo><mo>(</mo><mi>y</mi><mo>−</mo><msub><mi>y</mi><mn>0</mn></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">0 = m(x-x_0) - (y-y_0)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">m</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></eq></p>
+<blockquote data-line="572" class="code-line">
+<p data-line="572" class="code-line"><eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">m</span></span></span></span></eq> is a factionaly number (according to the definition of the gradient, <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi><mo>=</mo><mfrac><mi>h</mi><mi>w</mi></mfrac></mrow><annotation encoding="application/x-tex">m = \frac{h}{w}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">m</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.2251079999999999em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801079999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.02691em;">w</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">h</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></eq>) <br>
+<eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span></span></span></span></eq> is going to be some integer plus 1/2 (midpoints).</p>
+</blockquote>
+<p data-line="575" class="code-line">Hence, rearrange the equation with replacing <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">m</span></span></span></span></eq> with <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>h</mi><mi mathvariant="normal">/</mi><mi>w</mi></mrow><annotation encoding="application/x-tex">h/w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">h</span><span class="mord">/</span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span></span></span></span></eq> and multiply 2 to it.</p>
+</blockquote>
+<p data-line="577" class="code-line"><strong>Pseudocode</strong>:</p>
+<pre><code data-line="579" class="code-line language-java"><div><span class="hljs-keyword">int</span> y = y0;
+<span class="hljs-keyword">int</span> w = x1 - x0; <span class="hljs-keyword">int</span> h = y1 - y0;
+<span class="hljs-keyword">int</span> F = <span class="hljs-number">2</span> * h - w;
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> x = x0; x &lt;= x1; x++) {
+    drawPixel(x,y);
+    <span class="hljs-keyword">if</span> (F &lt; <span class="hljs-number">0</span>) F += <span class="hljs-number">2</span>*h;
+    <span class="hljs-keyword">else</span> {
+        F += <span class="hljs-number">2</span>*(h-w);
+        y++;
+    }
+}
+</div></code></pre>
+<h4 id="example-5" data-line="594" class="code-line">Example</h4>
+<p data-line="596" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_22.png" alt="" class="loading" id="image-hash-9b9258921b92b3ea1909df2af2ff71aa6c0cd5ddc4959262359e690de8cab62b"></p>
+<ol>
+<li data-line="598" class="code-line">
+<p data-line="598" class="code-line">The first pixel drawn at (0,0) because</p>
+<ul>
+<li data-line="599" class="code-line">The first pixel to be drawn anyway</li>
+<li data-line="600" class="code-line"><eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>=</mo><mn>2</mn><mo>∗</mo><mi>h</mi><mo>−</mo><mi>w</mi><mo>=</mo><mn>2</mn><mo>∗</mo><mn>5</mn><mo>−</mo><mn>8</mn><mo>=</mo><mn>2</mn><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">F = 2 * h - w = 2 * 5 - 8 = 2 \ge 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.77777em;vertical-align:-0.08333em;"></span><span class="mord mathdefault">h</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">8</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.78041em;vertical-align:-0.13597em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span></span></span></span></eq></li>
+</ul>
+</li>
+<li data-line="602" class="code-line">
+<p data-line="602" class="code-line">The second pixel drawn at (1,1) because</p>
+<ul>
+<li data-line="603" class="code-line"><eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>=</mo><mn>2</mn><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">F = 2 \ge 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.78041em;vertical-align:-0.13597em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">0</span></span></span></span></eq> previously. Hence, <code>y++</code>, resulting y increasing to 1 from 0, where x increasing by 1 anyway.</li>
+</ul>
+</li>
+<li data-line="605" class="code-line">
+<p data-line="605" class="code-line">And etc...</p>
+</li>
+</ol>
+<h4 id="relxing-restrictions-1" data-line="607" class="code-line">Relxing restrictions</h4>
+<p data-line="609" class="code-line">Lines in the other quadrants can be drawn by symmertical versions of the algorithm.
+<strong>Careaful that drawing from P to Q and from Q to P set the same pixels.</strong>
+Horizontal and vertical lines are common enough to warrant their own optimised code.</p>
+<h2 id="polygon-filling-1" data-line="613" class="code-line">Polygon filling</h2>
+<ol>
+<li data-line="615" class="code-line">Determining which pixels are inside a polygon is a matter of applying the edge-crossing test (<a href="http://week3.md/">week3.md</a>) for each possible pixel.</li>
+</ol>
+<p data-line="617" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_23.png" alt="" class="loading" id="image-hash-05189ab8f90dc10c55d20ab316d94f02b2eda3764b62a9622c1a0874ff5496dc"></p>
+<blockquote data-line="619" class="code-line">
+<p data-line="619" class="code-line">Tracing a ray horizontally crossing a polygon, even interceptions indicating outside, while odd interceptions indicating inside, on the contrary.</p>
+<p data-line="621" class="code-line">Such a solution does involve some of the problems.</p>
+<blockquote data-line="622" class="code-line">
+<p data-line="622" class="code-line">Shared edges: If the pixel is on the edge of a polygon, whether should we draw it? What if two polygons are adjacent?</p>
+<p data-line="624" class="code-line">Performance: Do we have to do the dege crossing test for every pixel?</p>
+</blockquote>
+</blockquote>
+<h4 id="shared-edges-1" data-line="626" class="code-line">Shared edges</h4>
+<p data-line="628" class="code-line">Pixels on shared edges between polygons need to be drawn consistiently regardless of the order the polygons are drawn, with no gaps.</p>
+<p data-line="630" class="code-line">To simplify and hendce form a rule: <strong>The edge pixels belong to the rightmost and/or upper polygon (i.e., do not draw rightmost or uppermost edge pixels).</strong></p>
+<p data-line="632" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_24.png" alt="" class="loading" id="image-hash-785772ecbc99cb3a8dceeba8aba7bd69d89ba406b71cf854afc45bfb523de583"></p>
+<h2 id="scanline-algorithm-1" data-line="634" class="code-line">Scanline algorithm</h2>
+<p data-line="636" class="code-line">And hence, we are introduced with a efficient algorithm to solving the problem, where fills the polygon.</p>
+<p data-line="638" class="code-line">As testing every pixel is very inefficient, whereas that checking where the result <em>changes value</em> (i.e., when crossing an edge) is crucial. In addition, we proceed row by row with:</p>
+<ol>
+<li data-line="640" class="code-line">Calculating intersections incrementally</li>
+<li data-line="641" class="code-line">Sorting by x value</li>
+<li data-line="642" class="code-line">Filling runs of pixels between intersections</li>
+</ol>
+<p data-line="644" class="code-line">forming a Edge Table.</p>
+<h4 id="edge-table-1" data-line="646" class="code-line">Edge table</h4>
+<p data-line="648" class="code-line">The edge table is a lookup table indexed on the y-value of the lower vertex of the edge. Horizontal edges are not added.</p>
+<p data-line="650" class="code-line">We store the x-value of the lower vertex, the increment (inverse gradient) of the edge and the y-value of the upper vertex.</p>
+<h5 id="example-6" data-line="652" class="code-line">Example</h5>
+<p data-line="654" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_25.png" alt="" class="loading" id="image-hash-a3cf2f2cc1911402e3431b831573b12a9dde093289ab4110d5a984a411dacb47"></p>
+<h4 id="active-edge-list-ael-1" data-line="656" class="code-line">Active Edge List (AEL)</h4>
+<p data-line="658" class="code-line">We keep a list of active edges that overlap the current scanline. Edges are added to the list as we pass the bottom vertex, removed from the list as we pass the top vertex. The edge intersection is updated incrementally.</p>
+<h4 id="edges-1" data-line="660" class="code-line">Edges</h4>
+<p data-line="662" class="code-line">For each edge in the AEL we store</p>
+<ul>
+<li data-line="664" class="code-line">The x-value of its crossing with the current row (initially the bottom x value)</li>
+<li data-line="665" class="code-line">The increment (inverse gradient)</li>
+<li data-line="666" class="code-line">The y-value of the top vertex</li>
+</ul>
+<h5 id="pseudocode-1" data-line="668" class="code-line">Pseudocode</h5>
+<pre><code data-line="670" class="code-line language-java"><div><span class="hljs-comment">// For every scanline</span>
+<span class="hljs-keyword">for</span> (y = minY; y &lt;= maxY; y++) {
+
+    <span class="hljs-function">remove all edges that end at y
+
+    <span class="hljs-title">for</span> <span class="hljs-params">(Edge e : active)</span> </span>{
+        e.x = e.x + e.inc;
+    }
+
+    add all edges that start at y - <span class="hljs-function">keep list sorted by x
+
+    <span class="hljs-title">for</span> <span class="hljs-params">(<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; active.size; i += <span class="hljs-number">2</span>)</span> </span>{
+        fillPixels(actiev[i].x, active[i+<span class="hljs-number">1</span>].x, y);
+    }
+}
+</div></code></pre>
+<h5 id="example-7" data-line="688" class="code-line">Example</h5>
+<p data-line="690" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_26.png" alt="" class="loading" id="image-hash-dc9e2d92b9ebfb7ac589b94b3cf41ca54ee10418eb807bb58f77e0e80a0751f7">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_28.png" alt="" class="loading" id="image-hash-754fc90e9594056d52051c02c3dd1b8675add57788507cfbfe1a9f788fdce61c">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_29.png" alt="" class="loading" id="image-hash-62acaf7867335f806901e1e783ca093b318e0d27cb054cb64eb8d7a967b0dd70">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_30.png" alt="" class="loading" id="image-hash-38594fe7c5badd5ea5f9a335c4d7d6ba322427c34b01368a61dd789d857e1306">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_31.png" alt="" class="loading" id="image-hash-0bc25ea6e4f0344aeb25838abeb9db937e4b3ba49b36d0d7f35496e5f7e20f9e">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_32.png" alt="" class="loading" id="image-hash-570a95cc05ffcc9d08213f48a74cc0b69c922e71da16c23cc7e6156d843f5111"></p>
+<blockquote data-line="697" class="code-line">
+<p data-line="697" class="code-line">If polygons are convex the active edge list always has 2 entries.</p>
+</blockquote>
+<h2 id="aliasing-1" data-line="699" class="code-line">Aliasing</h2>
+<p data-line="701" class="code-line">Lines and polygons drawn with these algorithms tend to look jagged if the pixel size is too large. I.e.,</p>
+<p data-line="703" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_33.png" alt="" class="loading" id="image-hash-c8b6e70b287f25f47f72992c8278653d614bae6da1d4a494ff76581db183b4fa"></p>
+<h4 id="antialiasing-1" data-line="705" class="code-line">Antialiasing</h4>
+<p data-line="707" class="code-line">There are two basic approaches to eliminiate aliasing (AKA. antialiasing).</p>
+<ul>
+<li data-line="709" class="code-line">Prefiltering: computing exact pixel values geometrically rather than by sampling.
+<ul>
+<li data-line="710" class="code-line">Prefiltering is most accurate but requires more computation.</li>
+</ul>
+</li>
+<li data-line="711" class="code-line">Postfiltering: taking samples at a higher resolution (supersampling) and then averaging.
+<ul>
+<li data-line="712" class="code-line">Postfiltering can be faster. Accuracy depends on how many samples are taken per pixel. More samples means large memory usage.</li>
+</ul>
+</li>
+</ul>
+<h4 id="prefiltering-1" data-line="714" class="code-line">Prefiltering</h4>
+<p data-line="716" class="code-line">For each pixel, computing the amount occupied and set pixel value to that precentage (i.e., how much of a pixel's area is covered by a object). And based on that precentage dimming or brightening the pixel.</p>
+<p data-line="718" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_34.png" alt="" class="loading" id="image-hash-62db1efa29b31020d7f046a6f31b87e493e2f8a98de5d90a4355be885dfc7e5a">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_35.png" alt="" class="loading" id="image-hash-d877e316e8c992c20e3a72f3a32479e47d7b9d75302e44ec616719c333c63655"></p>
+<h4 id="postfiltering-1" data-line="721" class="code-line">Postfiltering</h4>
+<p data-line="723" class="code-line">Draw the line at higher resolution and average (supersampling). In terms of postfiltering or supersampling, it is the process by which aliasing effects in graphics are reduced by increasing the frequency of the sampling grid and then average the results down.</p>
+<p data-line="725" class="code-line">This process means calculating a virtual image at a higher spatial resolution than the frame store resolution and then averaging down to the final resolution.</p>
+<p data-line="727" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_36.png" alt="" class="loading" id="image-hash-46b421a5b812cfea93e827b635be6b4a707bffe2a230173474df123ae5f8a834">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_37.png" alt="" class="loading" id="image-hash-c4badeb68762672d5dd5711f4f09f6eec3e63aceec5d9dceb130e00ad7debc31"></p>
+<p data-line="730" class="code-line">And final result,</p>
+<p data-line="732" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_38.png" alt="" class="loading" id="image-hash-e5d209a18705416c5d65b27fc405a301ae6c6fef589efeb9768087fc7b90c133"></p>
+<h5 id="weighted-postfiltering-1" data-line="734" class="code-line">Weighted postfiltering</h5>
+<p data-line="736" class="code-line">It is common to apply weights to the samples to favour values in the centre of the pixel.</p>
+<p data-line="738" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_40.png" alt="" class="loading" id="image-hash-e765d617515ae241fb3c1cf08e74f5500f9e391862234ae9d2bfa6ba288b1a41"></p>
+<h4 id="prefiltering-vs-postfiltering-1" data-line="740" class="code-line">Prefiltering vs. Postfiltering</h4>
+<p data-line="742" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_39.png" alt="" class="loading" id="image-hash-9575441375f740fe985f18996a4f45f2e864ecc335f7f266e099b0c5f31385f6"></p>
+<h4 id="stochastic-sampling-1" data-line="744" class="code-line">Stochastic sampling</h4>
+<p data-line="746" class="code-line">The problem for supersampling in a grid is that still tends to produce noticeably regular aliasing effects. Adding small amounts of <em>jitter</em> to the sampled points makes aliasing effects appear as visual noise.</p>
+<h4 id="double-sampling-1" data-line="748" class="code-line">Double Sampling</h4>
+<p data-line="750" class="code-line">Divide one pixel to four sub-pixels, and do the sampling on the nine according vertices.</p>
+<h4 id="adpative-sampling-1" data-line="752" class="code-line">Adpative Sampling</h4>
+<p data-line="754" class="code-line">Supersampling in large areas of uniform color is wasterful, while it is most useful in areas of major color change. One solution to it is to sample recursively, at finer levels of detail in areas with more color variance.</p>
+<p data-line="756" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_41.png" alt="" class="loading" id="image-hash-cfb0326122be249294a8907e787eb34934fbe2ac829e3b829f4d41df8cb13fcb">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_44.png" alt="" class="loading" id="image-hash-73867874ac00cc906029e99487219bcab3998eeca6cf697df454f61247fa9072">
+<img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chrome_43.png" alt="" class="loading" id="image-hash-99731c81d7471d16b93b5d053a3b5aef609309d34f4f1e7cea7b6283c920789b"></p>
+<h4 id="conclusion-1" data-line="760" class="code-line">Conclusion</h4>
+<p data-line="762" class="code-line">Prefiltering is most accurate but requires more computation, while Postfiltering can be faster. Accuracy depends on how many samples are taken per pixel. More samples means large memory usage.</p>
+<h4 id="in-opengl-1" data-line="764" class="code-line">In OpenGL</h4>
+<pre><code data-line="766" class="code-line language-java"><div><span class="hljs-comment">// Implementation dependant, may not even do anything</span>
+gl.glEnable(GL3.GL_LINE_SMOOTH);
+gl.glHint(GL3.GL_LINE_SMOOTH_HINT, GL3.GL_NICEST);
+
+<span class="hljs-comment">// Also requires alpha blending</span>
+gl.glEnable(GL2.GL_BLEND);
+gl.glBlendFunc(GL2.GL_SRC_ALPHA,
+        GL2.GL_ONE_MINUS_SRC_ALPHA);
+
+<span class="hljs-comment">// Full-screen multi-sampling</span>
+GLCapabilities capabilities = <span class="hljs-keyword">new</span> GLCapabilities();
+<span class="hljs-comment">// Has maximum number of samples</span>
+capabilities.setNumSamples(<span class="hljs-number">4</span>);
+capabilities.setSampleBuffers(<span class="hljs-keyword">true</span>);
+...
+gl.glEnable(GL.GL_MULTISAMPLE);
+</div></code></pre>
+<h2 id="exercise-1" data-line="785" class="code-line">Exercise</h2>
+<ol>
+<li data-line="787" class="code-line">
+<p data-line="787" class="code-line">Fix the error in the vertex shader:</p>
+<pre><code data-line="789" class="code-line language-c"><div><span class="hljs-comment">// The following two lines are wrong as they are supposed to be output instead of input</span>
+in vec4 viewPosition;
+in vec3 m;
+
+<span class="hljs-comment">// Hence, modified to</span>
+out vec4 viewPosition;
+out vec3 m;
+
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">()</span>
+</span>{
+    viewPosition = view_matrix * globalPosition;
+    <span class="hljs-comment">// The following line is wrong as mentioned earlier, gl_Position is the CVV coordiante</span>
+    gl_Position = viewPosition;
+
+    <span class="hljs-comment">// Hence, applying projection matrix here</span>
+    gl_Position = projection_matrix * viewPosition;
+}
+</div></code></pre>
+</li>
+<li data-line="809" class="code-line">
+<p data-line="809" class="code-line">Fix the error in the fragment shader:</p>
+<pre><code data-line="811" class="code-line language-c"><div>uniform vec3 lightIntensity;
+uniform vec3 ambientIntensity;
+
+uniform vec3 diffuseCoeff;
+uniform vec3 ambientCoeff;
+
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-comment">// The below two lines are wrong</span>
+    <span class="hljs-keyword">float</span> ambient = ambientIntensity * ambientCoeff;
+    <span class="hljs-keyword">float</span> diffuse = diffuseIntensity * diffuseCoeff;
+
+    <span class="hljs-comment">// The RGB-value for the light equation is calculated point-wise</span>
+    <span class="hljs-comment">// Hence the correct version would be</span>
+    vec3 ambient = ambientIntensity * ambientCoeff;
+    vec3 diffuse = diffuseIntensity * diffuseCoeff;
+}
+</div></code></pre>
+</li>
+<li data-line="831" class="code-line">
+<p data-line="831" class="code-line">What is a reason to use texture mapping rather than lots of little polygons? Are the two representations functionally equivalent? What are the differences?</p>
+<blockquote data-line="833" class="code-line">
+<ul>
+<li data-line="833" class="code-line">Textures are flat and do not respond to the lighting (unless there are normal mapping)</li>
+<li data-line="834" class="code-line">Polygons can interact with the physical world, whereas the textures are just flat</li>
+</ul>
+</blockquote>
+<p data-line="836" class="code-line">Textures can be used to give the illusion of complex geometry while keeping the actual geometric complexity low. Rather than using textures, we could just add lots of polygons to the figure to model the extra details, but this would slow down drawing, and it would be a lot of work to figure out the extra points and faces that we want to add.</p>
+<p data-line="838" class="code-line">They are not functionally equivalent. Textures can be used to simulate small feature that are not actually there in the geometry so will not respond to lighting or in the same way. For example, if we shine light nearly parallel to given face on the glof ball, one side of the dimple should be light and the other should be dark, but this won't happend if we'are using textures. Textures also have resolution and aliasing issues.</p>
+</li>
+<li data-line="840" class="code-line">
+<p data-line="840" class="code-line">What is the difference between the following two textures filtering settings?</p>
+<p data-line="842" class="code-line">These are 2 different settings for maginification. If we are in a situation where one texel gets mapped to many pixels (like zooming in or enlarging a photo too much) we have 2 choices of filters.</p>
+<p data-line="844" class="code-line"><code>gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);</code> just chooses the cloest the texture coordinate value ouptut by the rasteriser. This is known as point sampling most subject to visible aliasing.</p>
+<p data-line="846" class="code-line"><code>gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);</code> is a filter that for 2D textures performs bilinear interpolation across the 4 nearest texels (2 texels in S direction and 2 texels in T direction) to create a smoother (sometimes blurrier) image. This approach is more expensive to compute.</p>
+</li>
+<li data-line="848" class="code-line">
+<p data-line="848" class="code-line">What are MipMaps? Why are they used?</p>
+<p data-line="850" class="code-line">They are pre-calculated, sequences of textures, each of which is a pregressively lower resolution representation of the same image. The height and width of each image, or level, in the mipmap is a power of two smaller than the previous level where each texel in the next level is calculated by averaging 4 of the parent texels.</p>
+<p data-line="852" class="code-line">These can help with nimification aliasing problems which can arise when more than one texel is mapped to one pixel (like zooming out). Without mip-mapping you can use similar fiters for minification as for magnification - <code>GL_NEAREST</code> and <code>GL_LINEAR</code>. With mip mappoing you can use <code>GL_NEAREST_MIPMAP_NEAREST</code> which returns the nearest mip map or GL_LINEAR_MIPMAP_LINEAR which is trilinear filtering where bilinear filtering is used on 2 of the nearest mipmaps and then interpolated.</p>
+</li>
+<li data-line="854" class="code-line">
+<p data-line="854" class="code-line">What does the anisotropic filtering do?</p>
+<pre><code data-line="856" class="code-line language-java"><div><span class="hljs-keyword">float</span> flargest[] = <span class="hljs-keyword">new</span> <span class="hljs-keyword">float</span>[];
+gl.glGetFloatv(GL.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, fLargest[<span class="hljs-number">0</span>]);
+gl.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest[<span class="hljs-number">0</span>]);
+</div></code></pre>
+<p data-line="862" class="code-line">Turning on anisotropic filtering. Like trilinear filtering, anisotropic filtering is used to eliminate aliasing effects, but improves on trilinear filtering by reducing blur and preserving detail at extreme viewing angles. Anisotropic can take a different number of samples in the horizontal vs. vertical directions depending on the projected shape of the texel. Where as isotropic (trilinear/mipmapping) always filters the same in each direction.</p>
+<p data-line="864" class="code-line">Different degrees or ratios of anisotropic filtering can be applied udring rendering and current hardware rendering implementations set an upper bound on this ratio. This code finds out the maximum level of filtering for the current implementation and sets the filter to this max level.</p>
+<p data-line="866" class="code-line">For best results, combine anisotropic filtering with a mipmap minification filter.</p>
+</li>
+<li data-line="868" class="code-line">
+<p data-line="868" class="code-line">Scanline Algorithm</p>
+<p data-line="870" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/POWERPNTsupplement_8.png" alt="" class="loading" id="image-hash-b1e172ee5b8fc3bcebe5a78170103df3473e0003115651f4c53c3f0712774b91"></p>
+</li>
+<li data-line="872" class="code-line">
+<p data-line="872" class="code-line">Sampling method</p>
+<p data-line="874" class="code-line"><img src="vscode-resource:/d:/OneDrive/9415/notes/week6/img/chromesupplement_9.png" alt="" class="loading" id="image-hash-069bf8c4fa246586f7785f96bc8080060ea335cd3aedc4af9a54e0858fb9a19f"></p>
+<ol>
+<li data-line="876" class="code-line">
+<p data-line="876" class="code-line">Sampling in the centre of the pixel</p>
+<p data-line="878" class="code-line">0, as the centre of the pixel is not of any color at all.</p>
+</li>
+<li data-line="880" class="code-line">
+<p data-line="880" class="code-line">Sampling at the corners and taking the average</p>
+<p data-line="882" class="code-line">1/4, as only the bottom right corner is colored.</p>
+</li>
+<li data-line="884" class="code-line">
+<p data-line="884" class="code-line">Double sampling and taking the average</p>
+<p data-line="886" class="code-line">Double sampling will split one pixel into sub-four pixels, and nine vertices in total. 2/9, as the middle right and bottom right are colored.</p>
+</li>
+<li data-line="888" class="code-line">
+<p data-line="888" class="code-line">Double sampling and using the following mask to perform a weighted average</p>
+<pre><code data-line="890" class="code-line"><code><div>1/16    1/16    1/16
+1/16    1/2     1/16
+1/16    1/16    1/16
+</div></code></code></pre>
+<p data-line="896" class="code-line">1/16 + 1/16 = 1/8, same as above but with weights now.</p>
+</li>
+</ol>
+</li>
+</ol>
+
+</body></html>

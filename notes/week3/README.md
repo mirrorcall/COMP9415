@@ -338,25 +338,26 @@ Clipping is a method to seletively enable or disable rendering operations within
 
 ---
 
-* Orthographic projection
+# Orthographic projection
 
-    ![](img/chrome_HIeLXX1dtx.png)
-  * Depth: $q_x = p_x \\ q_y = p_y$
-  * The depth formula above shows that there is no difference between an object in near plane and an object in far plane (i.e., not performing foreshortening)
-  * Object size is independent of distance from the camera.
-  * Camera is located at the origin in camera co-coordinates and oriented down the negative z-axis
-  * Using a value of 2 for near means to place the near plane at z = -2
-  * Similarly far = 8 would place it at z = -8
-  * Orthographic transformation matrix maps the points in camera/eye coordinates into clipping coordinates
-  $$ M_o = 
-    \begin{pmatrix}
-        \frac{2}{r-l} & 0 & 0 & -\frac{r+l}{r-l} \\
-        0 & \frac{2}{t-b} & 0 & -\frac{t+b}{t-b} \\
-        0 & 0 & \frac{-2}{f-n} & -\frac{f+n}{f-n} \\
-        0 & 0 & 0 & 1
-    \end{pmatrix}
-  $$
-  * Common used scenario: to maintain the parallel lines and describe shapes of objects completely and exactly
+![](img/chrome_HIeLXX1dtx.png)
+
+* Depth: $q_x = p_x \\ q_y = p_y$
+* The depth formula above shows that there is no difference between an object in near plane and an object in far plane (i.e., not performing foreshortening)
+* Object size is independent of distance from the camera.
+* Camera is located at the origin in camera co-coordinates and oriented down the negative z-axis
+* Using a value of 2 for near means to place the near plane at z = -2
+* Similarly far = 8 would place it at z = -8
+* Orthographic transformation matrix maps the points in camera/eye coordinates into clipping coordinates
+$$ M_o = 
+\begin{pmatrix}
+    \frac{2}{r-l} & 0 & 0 & -\frac{r+l}{r-l} \\
+    0 & \frac{2}{t-b} & 0 & -\frac{t+b}{t-b} \\
+    0 & 0 & \frac{-2}{f-n} & -\frac{f+n}{f-n} \\
+    0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+* Common used scenario: to maintain the parallel lines and describe shapes of objects completely and exactly
 
 > More definition: <br>
 > Orthographic projection is a means of representing three-dimensional objects in two dimensions. It is a form of parallel projection, in which all the projection lines are orthogonal to the projection plane, resulting in every plane of the scene appearing affine transformation on the viewing surface.
@@ -630,3 +631,61 @@ Bascially, it is keeping record of least pseudodepth for depth buffer and updati
 4. What happens if the field of view (FOVY) is changed to 90 degrees? 180 degrees? 240 degrees?
 
     As the FOV gets larger, the squares shrink towards the midddle of the screen. At 180 degrees, they disappear. A FOV greater than 180 degrees is nonsensical.
+
+5. What is a depth buffer? How is it used for hidden surface removal? What advantages or disadvantages does it have over the painter's algorithm
+
+    The depth buffer is a block of memory that holds the depth information for every pixel. For each fragment we draw, we calculate its pseudodepth and compare it to the value in the depth buffer. If it is close to the camera, then we update the color buffer and the depth buffer to the new fragment's color and depth respectively.
+
+    The advantage of this over the `painter's algorithm` is that polygons can be drawn in any order. However, it requires more memory and does not support true transparency.
+
+6. What is the difference between a fragmetn shader and vertex shader? How do they relate?
+
+    Both vertex and fragment shaders are pieces of code that run on the GPU as part of the rendring process. The vertex shader is executed once for every vertex in the geometry being drawn. It compute the position of the vertex in CVV coordinates as well as any additional information that is produced by the rasterisation process. It must compute the color of the fragment. Values that are output by the vertex shader are interpolated before being passed into the fragment shader.
+
+7. Suppose you want a camera positioned at point `(3,2,1)` in world-coordinates looking forwards point `(1,0,-1)` such that the x-axis of the camera's coordinate frame is parallel to the x-z plane. Assume no scaling has been applied to it.
+
+    1. What would the camera's local coordinate frame be (expressed as matrix)?
+
+    k-vector will be the view vector. In other words, 
+    $\textbf{k} = (3,2,1) - (1,0,-1) = (2,2,2)$,
+
+    As the x-axis of the camera's coordinate frame is parallel to the x-z plane. i-vector shall be perpendicular to y-axis in world coordinate and k vectors (there will be no shear according to the assumption). Hence,
+    $i = (0,1,0) \times k = (2,0,-2)$
+
+    j-vector is just like face normal of i-k plane.
+    $j = k \times i = (-4,8,-4)$
+
+    Again, accroding to the assumption, there is no scaling, the matrix should be normalised.
+
+    $$ \begin{pmatrix}
+    1/\sqrt{2} & -1/\sqrt{6} & 1/\sqrt{3} & 3 \\
+    0 & 2/\sqrt{6} & 1/\sqrt{3} & 2 \\
+    -1/\sqrt{2} & -1/\sqrt{6} & 1/\sqrt{3} & 1 \\
+    0 & 0 & 0 & 1
+    \end{pmatrix} $$
+
+    2. What would the view matrix be for this camera?
+
+    According to the assumption, there is no scaling; hence, there are only translation and rotation applied.
+
+    $T = (3, 2, 1)$
+    and the inverse is
+    $T^{-1} = (-3, -2, -1)$
+
+    As to the rotation matrix,
+    $$ \begin{pmatrix}
+        1/\sqrt{2} & -1/\sqrt{6} & 1/\sqrt{3} & 0 \\
+        0 & 2/\sqrt{6} & 1/\sqrt{3} & 0 \\
+        -1/\sqrt{2} & -1/\sqrt{6} & 1/\sqrt{3} & 0 \\
+        0 & 0 & 0 & 1
+    \end{pmatrix} $$
+
+    ***And the inverse of the rotation matrix is just the transpose.***
+
+    $\textbf{M}_{view} = S^{-1}R^{-1}T^{-1}$
+
+    3. Give the camera coordiantes of a vertex with world coordinates of `(-1,1,3)`.
+
+    $\textbf{P}_{c} = \textbf{M}_{view} * \textbf{P}_{w}$
+
+    $\textbf{M}_{view}^{-1} * \textbf{c} = \textbf{P}_{w}$

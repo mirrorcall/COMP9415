@@ -2,11 +2,11 @@
 
 ## Recap
 
-|   | Light | Viewer |
+|   | LightPos | ViewerPos |
 |:-:|:-----:|:------:|
-| Ambient | FALSE | FALSE |
-| Diffuse | TRUE | FALSE |
-| Specular | TRUE | TRUE |
+| **Ambient** | FALSE | FALSE |
+| **Diffuse** | TRUE | FALSE |
+| **Specular** | TRUE | TRUE |
 
 * **Ambient Light** is the light that enters a room that bounces multiple times around the room before lighing a particular object.
 	* $I_{ambient} = I_a\rho_a$
@@ -18,9 +18,11 @@
 
 ## Shading
 
+**The following concepts are important when it comes to the calculating of these three shading calculations, where flat shading and gouraud shading are calculated based on the vertex (i.e., gouraud shading is able to calculate the color of the fragment, but still based on vertices because it is interpolated by the vertex), while phong shading is based on the fragment.**
+
 * Three common alternatives:
 	* Flat shading - Calculated for each face
-	* Gouraud shading - Calculated for each vertex and interpolated for every fragment
+	* Gouraud shading - Calculated for each vertex and interpolated for every fragment (the color of the fragment is approximated by the interpolation)
 	* Phong shading - Calculated for every fragment
 
 #### Flat Shading
@@ -95,7 +97,7 @@ This can be done using bilinear interpolation. However the interpolation normals
   * Improves diffuse shading
   * More physical accurate
 * Disadvantages:
-  * Slower than Gouraud as normals and illumination values have to be calculated per pixel rather than per vertex.
+  * Slower than Gouraud as normals and illumination values have to be calculated per pixel rather than per vertex, restrained by the speed of computation for the old hardwares.
 
   ## Lighting Summary
 
@@ -144,7 +146,7 @@ Shader.setFloat(gl, "phongExp", 16f);
 
 #### Caution
 
-Using too much light can result with color components becoming 1 (if they add up to more than 1 , they are clamped), which can result in things changing color or turning white.
+> Using too much light can result with color components becoming 1 (if they add up to more than 1 , they are clamped), which can result in things changing color or turning white.
 
 #### Transparency
 
@@ -155,12 +157,14 @@ A transparent (or translucent) object lets some of the light through from the ob
 
 #### The alpha channel
 
-A color is specified by 3 components (RGB). To make thins transparent we specify an alpha components as well.
+A color is specified by 3 components (RGB). To make things transparent we specify an alpha components as well.
 
 * alpha = 1 means the object is opaque
 * alpha = 0 means the object completely transparent (invisible)
 
 #### Alpha blending
+
+**Applying alpha to the new transparent object and (1-alpha) to the background object, which also arise the problem that background object needs to be drawn first (i.e., BACK-TO-FRONT ordering).**
 
 When drawing one object over another, we can blend their colors according to the alpha value. One of the usual blending equations is linear interpolation:
 
@@ -337,6 +341,8 @@ containing several steps:
 
 #### Degrees and Order
 
+**Order is how many control points for the current equation, while Degree is the maximum power of the current equation.**
+
 * Linear interpolation: Degree one curve (m=1), Second order (2 control points)
 * Quadratic interpolation: degree two curve (m=2), third order (3 control points)
 * Cubic interpolation: degree three curves (m=3), fourth order (4 control points)
@@ -425,6 +431,41 @@ Extruded shapes are created by sweeping a 2D polygon along a line or curve.
 
 ![](img/chrome_7ZUpQVd741.png)
 
+#### Implementation
+
+```java
+// We want the sides to be smooth, so make sure the vertices are shared.
+    List sides = new ArrayList<>();
+    List sideIndices = new ArrayList<>();
+    for (int i = 0; i < NUM_SLICES; i++) {
+        //The corners of the quad we will draw as triangles
+        Point3D f = frontcircle.get(i);
+        Point3D b = backCircle.get(i);
+
+        sides.add(f);
+        sides.add(b);
+
+        //Indices
+        int j = (i + 1) % NUM_SLICES;
+        sideIndices.add(2*i);
+        sideIndices.add(2*i + 1);
+        sideIndices.add(2*j + 1);
+
+        sideIndices.add(2*i);
+        sideIndices.add(2*j + 1);
+        sideIndices.add(2*j);
+    }
+
+    TriangleMesh sidesMesh = new TriangleMesh(sides, sideIndices, true);
+
+    front.init(gl);
+    back.init(gl);
+    sidesMesh.init(gl);
+    meshes.add(front);
+    meshes.add(back);
+    meshes.add(sidesMesh);
+```
+
 #### Variations
 
 One end of the prism can be translated, rotated or scaled from the other
@@ -459,3 +500,125 @@ One end of the prism can be translated, rotated or scaled from the other
   * helix $C(t) = (cos(t), sin(t), bt)$
 
     ![](img/chrome_ZmK2hYcwOS.png)
+
+## Frenet Frame
+
+**Altough i-axis is calculated based on the nomralized k vector, it does not guarantee that the i-axis is also normalized. Hence, double check whether i-axis needs to be normalized when it comes to the calculation about it.**
+
+We align the $k$ axis with the (normalized) tangent, and choose values of **i** and **j** to be perpendicular.
+
+$$ \phi = C(t) \\[1ex]
+\textbf{k} = \hat{C}'(t) \\[1ex]
+\textbf{i} = \begin{pmatrix}
+  -k_2 \\ k_1 \\ 0
+  \end{pmatrix} \\[1ex]
+\textbf{j} = \textbf{k} \times \textbf{i} $$
+
+#### Frenet Frame Calculation
+
+Finding the tangent (**k** vector):
+
+1. Using maths to find the derivatives
+2. Or just approximate the tangent
+    $$ T(t) = \textbf{normalize}(C(t+1) - C(t-1)) $$
+
+Moving along the frenet frame is simply multiply each point by the frenet frame.
+
+## Revolution
+
+A surface with radial symmetry (i.e., a round object, like a ring, a vase, a glass) can be made by sweeping a half cross-section around and axis.
+
+![](img/chromesupplement_6.png)
+
+Given a 2D curve: $C(t) = (X(t), Y(t))$
+
+We can then revolve it by adding an extra parameter
+
+$$ P(t, \theta) = (X(t)cos(\theta), Y(t), X(t)sin(\theta)) $$
+
+## L-Systems (Lindenmayer System)
+
+**It is a method for producing fractal structures.**
+
+> They were initially developed as a tool for modelling plant growth.
+
+#### Symbols and Rules
+
+* Symbols:
+  * A, B, +, -
+* Rules:
+  * A -> B - A - B
+  * B -> A + B + A
+
+#### Iteration
+
+We start with a given string of symbols and then iterate, replacing each on the left of a rewrite rule with the string on the right.
+
+![](img/chromesupplement_7.png)
+
+#### Drawing
+
+Each string has a graphical interpretation, usually using turtle graphics commands:
+
+* `A` = draw forward 1 step
+* `B` = draw forward 1 step
+* `+` = turn left 60 degrees
+* `-` = turn right 60 degrees
+
+#### Parameters
+
+We can add **parameters** to our rewrite rules to handle variables like scaling:
+
+* `A(s)` -> `B(s/2) - A(s/2) - B(s/2)`
+* `B(s)` -> `A(s/2) + B(s/2) + A(s/2)`
+* `A(s)`: draw forwards s units
+* `B(s)`: draw forwards s units
+
+#### Push and Pop
+
+We can also use a **LIFO stack** to save and restore global state like position and heading:
+
+* `A` -> `B [ + A ] - A`
+* `B` -> `B B`
+* `A`: forward 10
+* `B`: forward 10
+* `+`: rotate 45 left
+* `-`: rotate 45 right
+* `[`: push
+* `]`: pop
+
+#### Stochastic
+
+Add multiple productions with **weights** to allow random selection:
+
+* `(0.5) A` -> `B [ A ] A`
+* `(0.5) A` -> `A` <br>
+        `B` -> `B B`
+
+## 3D L-Systems
+
+We can build **3D L-Systems** by allowing symbols to translate to models and transformations of the coordinate frame.
+
+* `C`: `draw cylinder mesh`
+* `F`: `translate(0,0,10)`
+* `X`: `rotate(10,1,0,0)`
+* `Y`: `rotate(10,0,1,0)`
+* `S`: `scale(0.5,0.5,0.5)`
+
+
+## Exercise
+
+1. The above shading algorithms ignore some of the special lighting effects including,
+
+    * Shadow
+    * Refraction for the transparent materials
+    * Scattering
+    * Lights that does not directly come from the light source but bounced off other objects
+    * Source of the light that actually has a size or a shape
+    * Ripple effects
+
+2. To render a polished wooden bowl, how would you generate that mesh? What method would you use to texture it? What would its material properties be for lighting?
+
+    A mesh for the bowl could fairly easily be extruded by taking a vertical cross section through the middle of the bowl and rotating it around the `Y-axis` (creating a surface of revolution). To create the effect of the bowl having been carved out of a solid piece of wood, it would be more appropriate to use a 3D texture of woodgrain rather than try to wrap a 2D texture around this surface.
+
+    The bowl shows both specular and diffuse illumination (notice the specular highlights on the rim and inside the bowl). The specular highlights are broad, suggesting a low shininess value would be appropriate. Phong shading would probably be appropriate to ensure that the surface appears curved and highlights are rendered well. A normal map could be added to give the surface some roughness so that it does't look to glossy.
