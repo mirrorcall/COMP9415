@@ -1,0 +1,29 @@
+# Week 4 - B
+
+## Recap
+
+* Transoformation pipeline
+  * Transform a point in 3D: $$ P = (p_x,p_y,p_z)^T
+  * Extend to homogeneous coordinates: $$ P = (p_x,p_y,p_z,1)^T
+  * World matrix can be obtained by model matrix: $$ P_w = M_{model}P $$
+  * Camera matrix can be obtained by camera matrix: $$ P_c = M_{view}P_w $$
+  * CVV coordinates can be obtained by project matrix: $$ P_{cvv} = M_PP_c $$
+  * Clip to remove points outside CVV
+  * Perspective division to eliminate fourth component: $$ P_n = \frac{1}{p_w}P_{cvv} $$
+  * Viewport transformation to window coordinates: $$ P_v = M_{viewport}P_n $$
+  * `gl_Position` is the point int CVV coordinates
+* Pseudodepth
+  * Not linear (i.e. A curve rather than a straight line according to the ratio)
+  * More precision for objects close to the near plane (the gradient tends to be smaller and smaller - recall the graph) - rounding errors get worse towards far plane
+  
+## Computing pseudodepth for fragment
+
+Bilinear interpolation is lerping in 2 dimensions. It works for any polygon.
+
+1. The intersection **R1** between a ray parallel to x-axis coming through point **P** and **Q1-Q2** can be calculated by bilinear interpolation. The pseudodepth of $R_1$ is: $$ f(R_1) = \frac{y-y_1}{y_2-y_1}f{Q_2} + \frac{y2-y}{y_2-y_1}f(Q_1) $$
+![Polygon](figure1.png)
+
+2. Meanwhile, that ray intersects with **Q3-Q4** at point **R2** can be calculated in the same way.
+![Polygon](figure2.png)
+
+3. Finally, the pseudodepth of P is the bilinear interpolation of **R1** and **R2**
